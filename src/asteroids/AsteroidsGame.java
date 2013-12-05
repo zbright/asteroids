@@ -3,29 +3,66 @@ package asteroids;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.util.List;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.Toolkit;
+import java.util.ArrayList;
 
 import javax.swing.JFrame;
 
-import com.sun.corba.se.impl.oa.poa.ActiveObjectMap.Key;
-
 public class AsteroidsGame extends JFrame implements Runnable, KeyListener{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	Thread thread;
 	static int screenWidth;
 	static int screenHeight;
+	private List<Bullets> bullets;
+	private List<Asteroid> asteroids;
+	private Ship playerOneShip;
+	private Ship playerTwoShip;
+	private boolean isMultiplayer;
 	
 	public AsteroidsGame() {
 		thread = new Thread();
 		thread.start();
 		super.setTitle("Asteroids");
+		bullets = new ArrayList<Bullets>();
+		asteroids = new ArrayList<Asteroid>();
+		
+		isMultiplayer = false;
+		
+		if(isMultiplayer){
+			playerOneShip = new Ship((3*screenWidth/4), screenHeight/2, 0, false);
+			playerTwoShip = new Ship(screenWidth/4, screenHeight/2, Math.PI, true);
+		}
+		else
+			playerOneShip = new Ship(screenWidth/2, screenHeight/2, 0, false);
+		
 	}
 
 	public void paint(Graphics g) {
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, screenWidth, screenHeight);
+		
+		for(Bullets b : bullets)
+			b.draw(g);
+		
+		for(Asteroid a : asteroids)
+			a.draw(g);
+		
+		//Draw the first players ship and score/lives
+		playerOneShip.draw(g);
+		//Check if multiplayer is enabled
+		//If it is, draw second players ship and score/lives
+		
+		if(isMultiplayer)
+			playerTwoShip.draw(g);
+
 	}
+	
 	public void run() {
 		for (;;){
 			repaint();
@@ -84,11 +121,12 @@ public class AsteroidsGame extends JFrame implements Runnable, KeyListener{
 	}
 	
 	public static void main(String[] args) {
-		AsteroidsGame asteroids = new AsteroidsGame();
-		asteroids.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		screenWidth = screenSize.width;
-		screenHeight = screenSize.height;
+		screenHeight = screenSize.height - 50;
+		
+		AsteroidsGame asteroids = new AsteroidsGame();
+		asteroids.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		asteroids.setSize(screenWidth, screenHeight);
 		asteroids.setVisible(true);
 	}
