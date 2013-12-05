@@ -1,5 +1,6 @@
 package asteroids;
 
+import java.applet.Applet;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -11,11 +12,7 @@ import java.util.ArrayList;
 
 import javax.swing.JFrame;
 
-public class AsteroidsGame extends JFrame implements Runnable, KeyListener{
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 	Thread thread;
 	static int screenWidth;
 	static int screenHeight;
@@ -26,9 +23,9 @@ public class AsteroidsGame extends JFrame implements Runnable, KeyListener{
 	private boolean isMultiplayer;
 	
 	public AsteroidsGame() {
-		thread = new Thread();
-		thread.start();
-		super.setTitle("Asteroids");
+		super();
+		addKeyListener(this);
+		
 		bullets = new ArrayList<Bullets>();
 		asteroids = new ArrayList<Asteroid>();
 		
@@ -65,7 +62,20 @@ public class AsteroidsGame extends JFrame implements Runnable, KeyListener{
 	
 	public void run() {
 		for (;;){
+			long startTime = System.currentTimeMillis();
+			
+			playerOneShip.move(screenWidth, screenHeight);
+			if(isMultiplayer)
+				playerTwoShip.move(screenWidth, screenHeight);
 			repaint();
+		
+			
+			try {
+				long endTime = System.currentTimeMillis();
+				if (25 - (endTime - startTime) > 0)
+					Thread.sleep(25 - (endTime - startTime));
+			} catch (InterruptedException e) {
+			}
 		}
 	}
 	
@@ -92,10 +102,13 @@ public class AsteroidsGame extends JFrame implements Runnable, KeyListener{
 		{
 			//Player 1 movements
 			case(KeyEvent.VK_UP):
+				playerOneShip.updateAcceleration();
 				break;
 			case(KeyEvent.VK_LEFT):
+				playerOneShip.updateAngle(Ship.AngleMultiplier.LEFT);
 				break;
 			case(KeyEvent.VK_RIGHT):
+				playerOneShip.updateAngle(Ship.AngleMultiplier.RIGHT);
 				break;
 			case(KeyEvent.VK_EQUALS): //Firing
 				break;
@@ -126,8 +139,18 @@ public class AsteroidsGame extends JFrame implements Runnable, KeyListener{
 		screenHeight = screenSize.height - 50;
 		
 		AsteroidsGame asteroids = new AsteroidsGame();
-		asteroids.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		asteroids.setSize(screenWidth, screenHeight);
-		asteroids.setVisible(true);
+		asteroids.spinNewThread();
+		JFrame frame = new JFrame("Asteroids");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.add(asteroids);
+		frame.setSize(screenWidth, screenHeight);
+		frame.setVisible(true);
+		
+		asteroids.start();
+	}
+
+	private void spinNewThread() {
+		thread = new Thread(this);
+		thread.start();
 	}
 }

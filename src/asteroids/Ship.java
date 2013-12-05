@@ -3,10 +3,11 @@ package asteroids;
 import java.awt.Color;
 import java.awt.Graphics;
 
-public class Ship implements AsteroidsObj{
-	private int xPos, yPos;
-	private double angle;
+public class Ship { //implements AsteroidsObj
+	private double xPos, yPos, angle, accelerationConstant = .25;
 	private boolean isPlayerTwo;
+	private double[] velocity = {0, 0};
+	private boolean velocityUpdated = false, angleUpdated = false;
 
 	public Ship(int x, int y, double ang, boolean isSecond)
 	{
@@ -16,7 +17,6 @@ public class Ship implements AsteroidsObj{
 		isPlayerTwo = isSecond;
 	}
 	
-	@Override
 	public void draw(Graphics g){
 		int[] newX = new int[4], newY = new int[4];
 		int[] baseX = {14, -10, -6, -10}, baseY = {0, -8, 0, 8};  
@@ -34,9 +34,60 @@ public class Ship implements AsteroidsObj{
 		g.fillPolygon(newX, newY, 4);
 	}
 
-	@Override
 	public void move(int width, int height) {
-		// TODO Auto-generated method stub
+		angleUpdated = false;
+		velocityUpdated = false;
 		
+		xPos += velocity[0];
+		yPos += velocity[1];
+		
+		xPos = keepVariableWithinRange(xPos, 0, width);
+		yPos = keepVariableWithinRange(yPos, 0, height);
+		
+		velocity[0] = velocity[0] * .95;
+		velocity[1] = velocity[1] * .95;
+	}
+	
+	public void updateAcceleration() {
+		if(!velocityUpdated)
+		{
+			velocity[0] += accelerationConstant * Math.cos(angle);
+			velocity[1] += accelerationConstant * Math.sin(angle);
+			velocityUpdated = true;
+		}
+	}
+	
+	public void updateAngle(AngleMultiplier angMult) {
+		if(!angleUpdated)
+		{
+			angle += (angMult.index() * .1);
+			angleUpdated = true;
+			
+			angle = keepVariableWithinRange(angle, 0, (2*Math.PI));
+		}
+	}
+	
+	private double keepVariableWithinRange(double val, double min, double max) {
+		if(val > max)
+			val -= max;
+		else if(val < min)
+			val += max;
+		
+		return val;
+	}
+	
+	public enum AngleMultiplier {
+	    RIGHT (1), LEFT (-1);
+	    
+	    private final int index;   
+
+	    AngleMultiplier(int index) {
+	        this.index = index;
+	    }
+
+	    public int index() { 
+	        return index; 
+	    }
+
 	}
 }
