@@ -146,6 +146,8 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 	private void goToNextLevel() {
 		level++;
 		
+		bullets.clear();
+		
 		//Create asteroids (level 1 has 3, 2 has 4, etc)
 		for(int i = 0; i < Math.min(level + 2, 15); i++)
 			asteroids.add(new Asteroid(screenWidth, screenHeight, level, AsteroidLevel.BIG));

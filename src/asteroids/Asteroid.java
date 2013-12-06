@@ -68,10 +68,10 @@ public class Asteroid extends Drawable implements AsteroidsObj {
 	@Override
 	public void standardMove(int width, int height) {
 		position[0] += velocity[0];
-		position[0] = keepVariableWithinRange(position[0], 0 - astLevel.index, width + astLevel.index / 2);
+		position[0] = keepVariableWithinRange(position[0], 0 - astLevel.index / 2, width + astLevel.index / 2);
 		
 		position[1] += velocity[1];
-		position[1] = keepVariableWithinRange(position[1], 0 - astLevel.index, height + astLevel.index / 2);	
+		position[1] = keepVariableWithinRange(position[1], 0 - astLevel.index / 2, height + astLevel.index / 2);	
 	}
 	
 	public enum AsteroidLevel {
