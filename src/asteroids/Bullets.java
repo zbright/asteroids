@@ -6,7 +6,6 @@ import java.awt.Graphics;
 public class Bullets extends Drawable implements AsteroidsObj{
 	public double distanceFromShootLocation = 0;
 	public int playerOrigin = 0;
-	private double[] velocity = {0, 0}, position = {0, 0};
 	
 	public Bullets(Ship ship)
 	{

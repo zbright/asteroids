@@ -2,6 +2,8 @@ package asteroids;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.geom.Point2D;
+import java.util.List;
 import java.util.Random;
 
 public class Asteroid extends Drawable implements AsteroidsObj {
@@ -25,9 +27,38 @@ public class Asteroid extends Drawable implements AsteroidsObj {
 		astLevel = asteroidLevel;
 	}
 
+	//This constructor is used to create small asteroids
+	public Asteroid(Asteroid asteroid, int level) {
+		position[0] = asteroid.position[0];
+		position[1] = asteroid.position[1];
+		
+		angle = 2 * Math.PI * Math.random();
+		
+		Random random = new Random();
+		
+		velocity[0] = (random.nextInt(2 + level) - ((int)level / 2)) * Math.cos(angle);
+		velocity[0] = keepVariableWithinRange(velocity[0], -10, 10);
+		
+		velocity[1] = (random.nextInt(2 + level) - ((int)level / 2)) * Math.sin(angle);
+		velocity[1] = keepVariableWithinRange(velocity[1], -10, 10);
+		
+		astLevel = AsteroidLevel.SMALL;
+	}
+
 	@Override
 	public void draw(Graphics g) {
-		int[] baseX = {-60,-20,20,60,60,20,-20,-60}, baseY = {20,60,60,20,-20,-60,-60,-20};  
+		int[] baseX, baseY; 
+		
+		if(astLevel == AsteroidLevel.BIG) {
+			baseX = new int[] {-60,-20,20,60,60,20,-20,-60};
+			baseY = new int[] {20,60,60,20,-20,-60,-60,-20};
+		}
+		else if(astLevel == AsteroidLevel.SMALL) {
+			baseX = new int[] {-30,-10,10,30,30,10,-10,-30};
+			baseY = new int[] {10,30,30,10,-10,-30,-30,-10};
+		}
+		else
+			return;
 		
 		Color color = Color.GRAY;
 		
@@ -56,5 +87,33 @@ public class Asteroid extends Drawable implements AsteroidsObj {
 	        return index; 
 	    }
 
+	}
+
+	public boolean checkForCollision(Bullets bullet) {
+		Point2D a = getMiddle();
+		Point2D b = bullet.getMiddle();
+		double distance = a.distance(b); //getMiddle().distance(bullet.getMiddle());
+		if(distance > astLevel.index / 2) //add 5 because that is the size of the bullet
+			return false;
+		
+		return true;
+	}
+
+	public boolean checkForCollision(Ship ship) {
+		if(this.getMiddle().distance(ship.getMiddle()) > astLevel.index / 2 + 5) //add 5 because that is the size of the bullet
+			return false;
+		
+		return true;
+	}
+	
+	public AsteroidLevel getAstLevel() {
+		return astLevel;
+	}
+
+	public void split(List<Asteroid> asteroids, int level) {
+		for(int i = 0; i < 3; i++) {
+			asteroids.add(new Asteroid((int)position[0], (int)position[1], level, astLevel));
+		}
+		
 	}
 }

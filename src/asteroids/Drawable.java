@@ -2,6 +2,7 @@ package asteroids;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.geom.Point2D;
 
 public abstract class Drawable {
 	protected double angle;
@@ -27,5 +28,9 @@ public abstract class Drawable {
 			val += max;
 		
 		return val;
+	}
+	
+	protected Point2D getMiddle() {
+		return new Point2D.Double(position[0], position[1]);
 	}
 }

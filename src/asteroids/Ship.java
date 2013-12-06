@@ -9,14 +9,17 @@ public class Ship extends Drawable implements AsteroidsObj {
 	private AngleMultiplier rotateDir = AngleMultiplier.NONE;
 	private int shotCount = 0;
 	private int lives;
+	public int score;
 	
 	public Ship(int x, int y, double ang, boolean isSecond)
 	{
+		super();
 		position[0] = x;
 		position[1] = y;
 		angle = ang;
 		isPlayerTwo = isSecond;
 		lives = 3;
+		score = 0;
 	}
 	
 	public double[] getVelocity() {

@@ -10,6 +10,7 @@ import java.awt.RenderingHints;
 import java.util.List;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.geom.Point2D;
 import java.awt.Toolkit;
 import java.util.ArrayList;
 
@@ -59,9 +60,10 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 			a.draw(g);
 		
 		//Draw the players ship and score/lives
-		playerOneShip.draw(g);
+		if(playerOneShip != null)
+			playerOneShip.draw(g);
 		
-		if(isMultiplayer)
+		if(isMultiplayer && playerTwoShip != null)
 			playerTwoShip.draw(g);
 		
 		gGeneric.drawImage(image, 0, 0, this);
@@ -74,6 +76,9 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 				goToNextLevel();
 			}
 			handleKeyboardInputs();
+			
+			checkObjectsForCollision();
+			
 			repaint();
 			
 			try {
@@ -83,6 +88,61 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 		}
 	}
 	
+	private void checkObjectsForCollision() {
+		ArrayList<Asteroid> asteroidsToDelete = new ArrayList<Asteroid>();
+		ArrayList<Asteroid> asteroidsToAdd = new ArrayList<Asteroid>();
+		
+		for(Asteroid asteroid : asteroids)
+		{
+			boolean hit = false;
+			Bullets bulletToDelete = null;
+			
+			for(Bullets bullet : bullets) {
+				hit = asteroid.checkForCollision(bullet);
+				
+				if(hit) {
+					bulletToDelete = bullet;
+					
+					if(asteroid.getAstLevel() == AsteroidLevel.BIG) {						
+						asteroidsToDelete.add(asteroid);
+						for(int i = 0; i < 3; i++) {
+							asteroidsToAdd.add(new Asteroid(asteroid, level));
+						}
+					}
+					else if(asteroid.getAstLevel() == AsteroidLevel.SMALL) {
+						asteroidsToDelete.add(asteroid);
+					}
+						
+				}
+				
+				if(hit) {
+					if(bullet.playerOrigin == 1)
+						playerOneShip.score += 5;
+					else
+						playerTwoShip.score += 5;
+					
+					break;
+				}			
+			}
+				
+			//if a hit was captured, no need to check for collisions with anything else
+			if(hit) {
+				bullets.remove(bulletToDelete);
+				continue;
+			}
+			
+			asteroid.checkForCollision(playerOneShip);
+			if(isMultiplayer)
+				asteroid.checkForCollision(playerTwoShip);
+		}
+		
+		asteroids.removeAll(asteroidsToDelete);
+		asteroids.addAll(asteroidsToAdd);
+		
+		asteroidsToAdd.clear();
+		asteroidsToDelete.clear();
+	}
+
 	private void goToNextLevel() {
 		level++;
 		
@@ -262,7 +322,6 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 		frame.setVisible(true);
 		
 		asteroids.spinNewThreadAndSetupGraphics();
-		
 		asteroids.start();
 	}
 
@@ -271,5 +330,6 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 		graphics = image.getGraphics();
 		thread = new Thread(this);
 		thread.start();
+		//goToNextLevel();
 	}
 }
