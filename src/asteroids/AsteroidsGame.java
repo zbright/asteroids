@@ -40,6 +40,8 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 		else
 			playerOneShip = new Ship(screenWidth/2, screenHeight/2, 0, false);
 		
+		asteroids.add(new Asteroid(screenWidth/4, screenHeight/4, 0));
+		
 	}
 
 	public void paint(Graphics g) {

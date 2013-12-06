@@ -3,12 +3,10 @@ package asteroids;
 import java.awt.Color;
 import java.awt.Graphics;
 
-public class Ship implements AsteroidsObj {
-	private double angle;
+public class Ship extends Drawable implements AsteroidsObj {
 	private boolean isPlayerTwo;
 	public boolean upPress = false, turnPress = false, shotPress = false;
 	private AngleMultiplier rotateDir = AngleMultiplier.NONE;
-	private double[] velocity = {0, 0}, position = {0, 0};
 	private int shotCount = 0;
 	
 	public Ship(int x, int y, double ang, boolean isSecond)
@@ -39,20 +37,14 @@ public class Ship implements AsteroidsObj {
 	}
 	
 	public void draw(Graphics g){
-		int[] newX = new int[4], newY = new int[4];
 		int[] baseX = {14, -10, -6, -10}, baseY = {0, -8, 0, 8};  
 		
-		if(!isPlayerTwo)
-			g.setColor(Color.WHITE);
-		else
-			g.setColor(Color.MAGENTA);
+		Color color = Color.WHITE;
 		
-		for (int i = 0; i < 4; i++) {
-			newX[i] = (int) (baseX[i] * Math.cos(angle) - baseY[i] * Math.sin(angle) + position[0] + .5); 
-			newY[i] = (int) (baseX[i] * Math.sin(angle) + baseY[i] * Math.cos(angle) + position[1] + .5);
-		}
+		if(isPlayerTwo)
+			color = Color.MAGENTA;
 		
-		g.drawPolygon(newX, newY, 4);
+		drawObject(g, baseX, baseY, color);
 	}
 	
 	public void standardMove(int width, int height) {
