@@ -4,6 +4,9 @@ import java.applet.Applet;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.RenderingHints;
 import java.util.List;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -11,6 +14,8 @@ import java.awt.Toolkit;
 import java.util.ArrayList;
 
 import javax.swing.JFrame;
+
+import asteroids.Asteroid.AsteroidLevel;
 
 public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 	Thread thread;
@@ -23,28 +28,27 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 	private boolean isMultiplayer;
 	private long lastShotTime1;
 	private long lastShotTime2;
+	private Image image;
+	private Graphics graphics;
+	private int level;
 	
 	public AsteroidsGame() {
 		super();
 		addKeyListener(this);
 		
+		level = 0;
 		bullets = new ArrayList<Bullets>();
 		asteroids = new ArrayList<Asteroid>();
 		
 		isMultiplayer = false;
-		
-		if(isMultiplayer){
-			playerOneShip = new Ship((3*screenWidth/4), screenHeight/2, 0, false);
-			playerTwoShip = new Ship(screenWidth/4, screenHeight/2, Math.PI, true);
-		}
-		else
-			playerOneShip = new Ship(screenWidth/2, screenHeight/2, 0, false);
-		
-		asteroids.add(new Asteroid(screenWidth/4, screenHeight/4, 0));
-		
 	}
 
-	public void paint(Graphics g) {
+	public void paint(Graphics gGeneric) {
+		Graphics2D g = (Graphics2D) graphics;
+        RenderingHints render = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        g.setRenderingHints(render);
+		
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, screenWidth, screenHeight);
 		
@@ -54,28 +58,46 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 		for(Asteroid a : asteroids)
 			a.draw(g);
 		
-		//Draw the first players ship and score/lives
+		//Draw the players ship and score/lives
 		playerOneShip.draw(g);
-		//Check if multiplayer is enabled
-		//If it is, draw second players ship and score/lives
 		
 		if(isMultiplayer)
 			playerTwoShip.draw(g);
-
+		
+		gGeneric.drawImage(image, 0, 0, this);
 	}
 	
 	public void run() {
 		for (;;){
+			if(asteroids.isEmpty()) {
+				//add 100 * level points to scores
+				goToNextLevel();
+			}
 			handleKeyboardInputs();
 			repaint();
 			
 			try {
-				Thread.sleep(20);
+				Thread.sleep(30);
 			} catch (InterruptedException e) {
 			}
 		}
 	}
 	
+	private void goToNextLevel() {
+		level++;
+		
+		//Create asteroids (level 1 has 3, 2 has 4, etc)
+		for(int i = 0; i < Math.min(level + 2, 15); i++)
+			asteroids.add(new Asteroid(screenWidth, screenHeight, level, AsteroidLevel.BIG));
+		
+		if(isMultiplayer){
+			playerOneShip = new Ship((3*screenWidth/4), screenHeight/2, 0, false);
+			playerTwoShip = new Ship(screenWidth/4, screenHeight/2, Math.PI, true);
+		}
+		else
+			playerOneShip = new Ship(screenWidth/2, screenHeight/2, 0, false);
+	}
+
 	private void handleKeyboardInputs() {
 		ArrayList<Bullets> bulletsToDelete = new ArrayList<Bullets>();
 		
@@ -91,6 +113,11 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 		
 		bullets.removeAll(bulletsToDelete);
 		
+		for(Asteroid a : asteroids)
+		{
+			a.standardMove(screenWidth, screenHeight);
+		}
+		
 		if(playerOneShip.upPress)
 			playerOneShip.accelerate();
 		if(playerOneShip.turnPress)
@@ -103,7 +130,7 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 			{
 				playerOneShip.setShotCountOrReset(true); //reset shot count
 			} 
-			if(playerOneShip.getShotCount() < 3)
+			if(playerOneShip.getShotCount() < 4)
 			{
 				bullets.add(new Bullets(playerOneShip));
 				lastShotTime1 = System.currentTimeMillis();
@@ -126,7 +153,7 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 				{
 					playerTwoShip.setShotCountOrReset(true); //reset shot count
 				} 
-				if(playerTwoShip.getShotCount() < 3)
+				if(playerTwoShip.getShotCount() < 4)
 				{
 					bullets.add(new Bullets(playerTwoShip));
 					lastShotTime2 = System.currentTimeMillis();
@@ -227,17 +254,21 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 		screenHeight = screenSize.height - 50;
 		
 		AsteroidsGame asteroids = new AsteroidsGame();
-		asteroids.spinNewThread();
+						
 		JFrame frame = new JFrame("Asteroids");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.add(asteroids);
 		frame.setSize(screenWidth, screenHeight);
 		frame.setVisible(true);
 		
+		asteroids.spinNewThreadAndSetupGraphics();
+		
 		asteroids.start();
 	}
 
-	private void spinNewThread() {
+	private void spinNewThreadAndSetupGraphics() {
+		image = createImage(screenWidth, screenHeight);
+		graphics = image.getGraphics();
 		thread = new Thread(this);
 		thread.start();
 	}

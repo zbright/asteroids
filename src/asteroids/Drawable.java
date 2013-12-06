@@ -19,4 +19,13 @@ public abstract class Drawable {
 	    g.setColor(color);
 	    g.drawPolygon(newX, newY, len);
 	}
+	
+	protected double keepVariableWithinRange(double val, double min, double max) {
+		if(val > max)
+			val -= max;
+		else if(val < min)
+			val += max;
+		
+		return val;
+	}
 }

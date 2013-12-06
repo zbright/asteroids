@@ -8,6 +8,7 @@ public class Ship extends Drawable implements AsteroidsObj {
 	public boolean upPress = false, turnPress = false, shotPress = false;
 	private AngleMultiplier rotateDir = AngleMultiplier.NONE;
 	private int shotCount = 0;
+	private int lives;
 	
 	public Ship(int x, int y, double ang, boolean isSecond)
 	{
@@ -15,6 +16,7 @@ public class Ship extends Drawable implements AsteroidsObj {
 		position[1] = y;
 		angle = ang;
 		isPlayerTwo = isSecond;
+		lives = 3;
 	}
 	
 	public double[] getVelocity() {
@@ -37,7 +39,7 @@ public class Ship extends Drawable implements AsteroidsObj {
 	}
 	
 	public void draw(Graphics g){
-		int[] baseX = {14, -10, -6, -10}, baseY = {0, -8, 0, 8};  
+		int[] baseX = {20, -12, -4, -12}, baseY = {0, -10, 0, 10};  
 		
 		Color color = Color.WHITE;
 		
@@ -84,15 +86,6 @@ public class Ship extends Drawable implements AsteroidsObj {
 	public void stopTurning() {
 		rotateDir = AngleMultiplier.NONE;
 		turnPress = false;
-	}
-	
-	private double keepVariableWithinRange(double val, double min, double max) {
-		if(val > max)
-			val -= max;
-		else if(val < min)
-			val += max;
-		
-		return val;
 	}
 	
 	public enum AngleMultiplier {

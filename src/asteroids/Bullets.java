@@ -3,7 +3,7 @@ package asteroids;
 import java.awt.Color;
 import java.awt.Graphics;
 
-public class Bullets implements AsteroidsObj{
+public class Bullets extends Drawable implements AsteroidsObj{
 	public double distanceFromShootLocation = 0;
 	public int playerOrigin = 0;
 	private double[] velocity = {0, 0}, position = {0, 0};
@@ -38,14 +38,5 @@ public class Bullets implements AsteroidsObj{
 		
 		position[1] += velocity[1];
 		position[1] = keepVariableWithinRange(position[1], 0, height);		
-	}
-	
-	private double keepVariableWithinRange(double val, double min, double max) {
-		if(val > max)
-			val -= max;
-		else if(val < min)
-			val += max;
-		
-		return val;
 	}
 }
