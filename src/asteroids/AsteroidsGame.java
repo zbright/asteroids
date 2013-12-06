@@ -3,6 +3,7 @@ package asteroids;
 import java.applet.Applet;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -32,6 +33,8 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 	private Image image;
 	private Graphics graphics;
 	private int level;
+	private boolean playerOneGameOver = false;
+	private boolean playerTwoGameOver = false;
 	
 	public AsteroidsGame() {
 		super();
@@ -41,7 +44,7 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 		bullets = new ArrayList<Bullets>();
 		asteroids = new ArrayList<Asteroid>();
 		
-		isMultiplayer = false;
+		isMultiplayer = true;
 	}
 
 	public void paint(Graphics gGeneric) {
@@ -59,12 +62,27 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 		for(Asteroid a : asteroids)
 			a.draw(g);
 		
+		Font font = new Font("Veranda", Font.PLAIN, 25);
+		g.setColor(Color.WHITE);
+		g.setFont(font);
+        g.drawString("Level : " + level, screenWidth / 2, screenHeight - 50);
+        
 		//Draw the players ship and score/lives
-		if(playerOneShip != null)
-			playerOneShip.draw(g);
+		if(playerOneShip != null) {
+			g.setColor(Color.CYAN);
+			g.drawString("Player 1: " + "Lives : " + playerOneShip.lives + " Score : " + playerOneShip.score, 0, screenHeight - 75); 
+			
+			if(!playerOneGameOver)
+				playerOneShip.draw(g);
+		}
 		
-		if(isMultiplayer && playerTwoShip != null)
-			playerTwoShip.draw(g);
+		if(isMultiplayer && playerTwoShip != null) {
+			g.setColor(Color.MAGENTA);
+			g.drawString("Player 2: " + "Lives : " + playerTwoShip.lives + " Score : " + playerTwoShip.score, 0, screenHeight - 50);
+			
+			if(!playerTwoGameOver)
+				playerTwoShip.draw(g);
+		}
 		
 		gGeneric.drawImage(image, 0, 0, this);
 	}
@@ -72,7 +90,6 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 	public void run() {
 		for (;;){
 			if(asteroids.isEmpty()) {
-				//add 100 * level points to scores
 				goToNextLevel();
 			}
 			handleKeyboardInputs();
@@ -103,16 +120,7 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 				if(hit) {
 					bulletToDelete = bullet;
 					
-					if(asteroid.getAstLevel() == AsteroidLevel.BIG) {						
-						asteroidsToDelete.add(asteroid);
-						for(int i = 0; i < 3; i++) {
-							asteroidsToAdd.add(new Asteroid(asteroid, level));
-						}
-					}
-					else if(asteroid.getAstLevel() == AsteroidLevel.SMALL) {
-						asteroidsToDelete.add(asteroid);
-					}
-						
+					asteroidCollision(asteroid, asteroidsToAdd, asteroidsToDelete);
 				}
 				
 				if(hit) {
@@ -131,9 +139,22 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 				continue;
 			}
 			
-			asteroid.checkForCollision(playerOneShip);
-			if(isMultiplayer)
-				asteroid.checkForCollision(playerTwoShip);
+			hit = asteroid.checkForCollision(playerOneShip);
+			if(hit) {
+				asteroidCollision(asteroid, asteroidsToAdd, asteroidsToDelete);
+				playerOneGameOver = playerOneShip.died(screenWidth/2, screenHeight/2);
+				
+				hit = false;
+			}
+			
+			if(isMultiplayer) {
+				hit = asteroid.checkForCollision(playerTwoShip);
+				
+				if(hit) {
+					asteroidCollision(asteroid, asteroidsToAdd, asteroidsToDelete);
+					playerTwoGameOver = playerTwoShip.died(screenWidth/2, screenHeight/2);
+				}
+			}
 		}
 		
 		asteroids.removeAll(asteroidsToDelete);
@@ -143,21 +164,50 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 		asteroidsToDelete.clear();
 	}
 
+	private void asteroidCollision(Asteroid asteroid, ArrayList<Asteroid> asteroidsToAdd, ArrayList<Asteroid> asteroidsToDelete) {
+		if(asteroid.getAstLevel() == AsteroidLevel.BIG) {						
+			asteroidsToDelete.add(asteroid);
+			for(int i = 0; i < 3; i++) {
+				asteroidsToAdd.add(new Asteroid(asteroid, level));
+			}
+		}
+		else if(asteroid.getAstLevel() == AsteroidLevel.SMALL) {
+			asteroidsToDelete.add(asteroid);
+		}
+	}
+
 	private void goToNextLevel() {
 		level++;
 		
 		bullets.clear();
 		
 		//Create asteroids (level 1 has 3, 2 has 4, etc)
-		for(int i = 0; i < Math.min(level + 2, 15); i++)
+		for(int i = 0; i < Math.min(level + 2, 20); i++)
 			asteroids.add(new Asteroid(screenWidth, screenHeight, level, AsteroidLevel.BIG));
 		
 		if(isMultiplayer){
-			playerOneShip = new Ship((3*screenWidth/4), screenHeight/2, 0, false);
-			playerTwoShip = new Ship(screenWidth/4, screenHeight/2, Math.PI, true);
+			playerOneShip = createOrUpdateShip(playerOneShip, 3*screenWidth/4, screenHeight/2, 0, false);
+			playerTwoShip = createOrUpdateShip(playerTwoShip, screenWidth/4, screenHeight/2, Math.PI, true);
 		}
 		else
-			playerOneShip = new Ship(screenWidth/2, screenHeight/2, 0, false);
+			playerOneShip = createOrUpdateShip(playerOneShip, screenWidth/2, screenHeight/2, 0, false);
+		
+		if(level > 1) {
+			if(!playerOneShip.isDead)
+				playerOneShip.score += 100;
+			if(isMultiplayer && !playerTwoShip.isDead)
+				playerTwoShip.score += 100;
+		}
+	}
+
+	private Ship createOrUpdateShip(Ship ship, int x, int y, double angle, boolean isSecondPlayer) {
+		if(ship == null)
+			ship = new Ship(x, y, angle, isSecondPlayer);
+		else if(!ship.isDead){
+			ship.nextLevel(x, y, angle);
+		}
+		
+		return ship;
 	}
 
 	private void handleKeyboardInputs() {

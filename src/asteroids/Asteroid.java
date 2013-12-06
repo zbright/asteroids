@@ -36,10 +36,10 @@ public class Asteroid extends Drawable implements AsteroidsObj {
 		
 		Random random = new Random();
 		
-		velocity[0] = (random.nextInt(2 + level) - ((int)level / 2)) * Math.cos(angle);
+		velocity[0] = random.nextInt(3) - 1 * level * Math.random() * Math.cos(angle);
 		velocity[0] = keepVariableWithinRange(velocity[0], -10, 10);
 		
-		velocity[1] = (random.nextInt(2 + level) - ((int)level / 2)) * Math.sin(angle);
+		velocity[1] = random.nextInt(3) - 1 * level * Math.random() *  Math.sin(angle);
 		velocity[1] = keepVariableWithinRange(velocity[1], -10, 10);
 		
 		astLevel = AsteroidLevel.SMALL;
@@ -90,17 +90,16 @@ public class Asteroid extends Drawable implements AsteroidsObj {
 	}
 
 	public boolean checkForCollision(Bullets bullet) {
-		Point2D a = getMiddle();
-		Point2D b = bullet.getMiddle();
-		double distance = a.distance(b); //getMiddle().distance(bullet.getMiddle());
-		if(distance > astLevel.index / 2) //add 5 because that is the size of the bullet
+		double distance = getMiddle().distance(bullet.getMiddle());
+		if(distance > astLevel.index / 2)
 			return false;
 		
 		return true;
 	}
 
 	public boolean checkForCollision(Ship ship) {
-		if(this.getMiddle().distance(ship.getMiddle()) > astLevel.index / 2 + 5) //add 5 because that is the size of the bullet
+		double distance = getMiddle().distance(ship.getMiddle());
+		if(distance > astLevel.index / 2 || ship.isDead)
 			return false;
 		
 		return true;

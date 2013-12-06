@@ -3,13 +3,16 @@ package asteroids;
 import java.awt.Color;
 import java.awt.Graphics;
 
+import com.sun.org.apache.xpath.internal.operations.And;
+
 public class Ship extends Drawable implements AsteroidsObj {
 	private boolean isPlayerTwo;
 	public boolean upPress = false, turnPress = false, shotPress = false;
 	private AngleMultiplier rotateDir = AngleMultiplier.NONE;
 	private int shotCount = 0;
-	private int lives;
+	public int lives;
 	public int score;
+	public boolean isDead = false;
 	
 	public Ship(int x, int y, double ang, boolean isSecond)
 	{
@@ -44,7 +47,7 @@ public class Ship extends Drawable implements AsteroidsObj {
 	public void draw(Graphics g){
 		int[] baseX = {20, -12, -4, -12}, baseY = {0, -10, 0, 10};  
 		
-		Color color = Color.WHITE;
+		Color color = Color.CYAN;
 		
 		if(isPlayerTwo)
 			color = Color.MAGENTA;
@@ -123,5 +126,25 @@ public class Ship extends Drawable implements AsteroidsObj {
 			shotCount++;
 		else
 			shotCount = 0;
+	}
+
+	public boolean died(int x, int y) {
+		position[0] = x;
+		position[1] = y;
+		
+		lives--;
+		
+		if(lives <= 0) {
+			isDead = true;
+			return true;
+		}
+		return false;
+	}
+
+	public void nextLevel(int x, int y, double ang) {
+		lives = 3;
+		position[0] = x;
+		position[1] = y;
+		angle = ang;
 	}
 }
