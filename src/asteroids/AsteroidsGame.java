@@ -62,23 +62,39 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 	
 	public void run() {
 		for (;;){
-			long startTime = System.currentTimeMillis();
+			//long startTime = System.currentTimeMillis();
 			
-			playerOneShip.move(screenWidth, screenHeight);
-			if(isMultiplayer)
-				playerTwoShip.move(screenWidth, screenHeight);
+//			playerOneShip.move(screenWidth, screenHeight);
+//			if(isMultiplayer)
+//				playerTwoShip.move(screenWidth, screenHeight);
+			
+			handleKeyboardInputs();
 			repaint();
 		
 			
 			try {
-				long endTime = System.currentTimeMillis();
-				if (25 - (endTime - startTime) > 0)
-					Thread.sleep(25 - (endTime - startTime));
+				Thread.sleep(20);
 			} catch (InterruptedException e) {
 			}
 		}
 	}
 	
+	private void handleKeyboardInputs() {
+		if(playerOneShip.upPress)
+			playerOneShip.accelerate();
+		if(playerOneShip.turnPress)
+			playerOneShip.turn();
+		playerOneShip.standardMove(screenWidth, screenHeight);
+		
+		if(isMultiplayer) {
+			if(playerTwoShip.upPress)
+				playerTwoShip.accelerate();
+			if(playerTwoShip.turnPress)
+				playerTwoShip.turn();
+			playerTwoShip.standardMove(screenWidth, screenHeight);	
+		}
+	}
+
 	public void update(Graphics gfx) {
 		paint(gfx);
 	}
@@ -102,23 +118,44 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 		{
 			//Player 1 movements
 			case(KeyEvent.VK_UP):
-				playerOneShip.updateAcceleration();
+				if(press)
+					playerOneShip.updateAcceleration();
+				else
+					playerOneShip.stopAcceleration();
 				break;
 			case(KeyEvent.VK_LEFT):
-				playerOneShip.updateAngle(Ship.AngleMultiplier.LEFT);
+				if(press)
+					playerOneShip.updateAngle(Ship.AngleMultiplier.LEFT);
+				else
+					playerOneShip.stopTurning();
 				break;
 			case(KeyEvent.VK_RIGHT):
-				playerOneShip.updateAngle(Ship.AngleMultiplier.RIGHT);
+				if(press)
+					playerOneShip.updateAngle(Ship.AngleMultiplier.RIGHT);
+				else
+					playerOneShip.stopTurning();
 				break;
 			case(KeyEvent.VK_EQUALS): //Firing
 				break;
 			
 			//Player 2 movements
 			case(KeyEvent.VK_W):
+				if(press)
+					playerTwoShip.updateAcceleration();
+				else
+					playerTwoShip.stopAcceleration();
 				break;
-			case(KeyEvent.VK_S):
+			case(KeyEvent.VK_A):
+				if(press)
+					playerTwoShip.updateAngle(Ship.AngleMultiplier.LEFT);
+				else
+					playerTwoShip.stopTurning();
 				break;
 			case(KeyEvent.VK_D):
+				if(press)
+					playerTwoShip.updateAngle(Ship.AngleMultiplier.RIGHT);
+				else
+					playerTwoShip.stopTurning();
 				break;
 			case(KeyEvent.VK_SPACE):
 				break;

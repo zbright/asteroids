@@ -3,11 +3,15 @@ package asteroids;
 import java.awt.Color;
 import java.awt.Graphics;
 
+import javax.sql.rowset.spi.SyncResolver;
+
 public class Ship { //implements AsteroidsObj
-	private double xPos, yPos, angle, accelerationConstant = .25;
+	private double xPos, yPos, angle;
 	private boolean isPlayerTwo;
 	private double[] velocity = {0, 0};
 	private boolean velocityUpdated = false, angleUpdated = false;
+	public boolean upPress = false, turnPress = false;
+	private AngleMultiplier rotateDir = AngleMultiplier.NONE;
 
 	public Ship(int x, int y, double ang, boolean isSecond)
 	{
@@ -31,12 +35,23 @@ public class Ship { //implements AsteroidsObj
 			newY[i] = (int) (baseX[i] * Math.sin(angle) + baseY[i] * Math.cos(angle) + yPos + .5);
 		}
 		
-		g.fillPolygon(newX, newY, 4);
+		g.drawPolygon(newX, newY, 4);
 	}
 
 	public void move(int width, int height) {
 		angleUpdated = false;
 		velocityUpdated = false;
+		
+		if(turnPress)
+		{
+			angle += (rotateDir.index() * .1);
+			angle = keepVariableWithinRange(angle, 0, (2*Math.PI));
+		}
+		if(upPress)
+		{
+			velocity[0] += .25 * Math.cos(angle);
+			velocity[1] += .25 * Math.sin(angle);
+		}
 		
 		xPos += velocity[0];
 		yPos += velocity[1];
@@ -48,23 +63,43 @@ public class Ship { //implements AsteroidsObj
 		velocity[1] = velocity[1] * .95;
 	}
 	
+	public void standardMove(int width, int height) {
+		xPos += velocity[0];
+		yPos += velocity[1];
+		
+		xPos = keepVariableWithinRange(xPos, 0, width);
+		yPos = keepVariableWithinRange(yPos, 0, height);
+		
+		velocity[0] = velocity[0] * .95;
+		velocity[1] = velocity[1] * .95;
+	}
+	
+	public void accelerate(){
+		velocity[0] += .25 * Math.cos(angle);
+		velocity[1] += .25 * Math.sin(angle);
+	}
+	
+	public void turn() {
+		angle += (rotateDir.index() * .1);
+		angle = keepVariableWithinRange(angle, 0, (2*Math.PI));
+	}
+	
 	public void updateAcceleration() {
-		if(!velocityUpdated)
-		{
-			velocity[0] += accelerationConstant * Math.cos(angle);
-			velocity[1] += accelerationConstant * Math.sin(angle);
-			velocityUpdated = true;
-		}
+		upPress = true;
 	}
 	
 	public void updateAngle(AngleMultiplier angMult) {
-		if(!angleUpdated)
-		{
-			angle += (angMult.index() * .1);
-			angleUpdated = true;
-			
-			angle = keepVariableWithinRange(angle, 0, (2*Math.PI));
-		}
+		turnPress = true;
+		rotateDir = angMult;
+	}
+	
+	public void stopAcceleration() {
+		upPress = false;
+	}
+	
+	public void stopTurning() {
+		rotateDir = AngleMultiplier.NONE;
+		turnPress = false;
 	}
 	
 	private double keepVariableWithinRange(double val, double min, double max) {
@@ -77,7 +112,7 @@ public class Ship { //implements AsteroidsObj
 	}
 	
 	public enum AngleMultiplier {
-	    RIGHT (1), LEFT (-1);
+	    RIGHT (1), LEFT (-1), NONE(0);
 	    
 	    private final int index;   
 
