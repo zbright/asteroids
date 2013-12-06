@@ -21,6 +21,8 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 	private Ship playerOneShip;
 	private Ship playerTwoShip;
 	private boolean isMultiplayer;
+	private long lastShotTime1;
+	private long lastShotTime2;
 	
 	public AsteroidsGame() {
 		super();
@@ -62,15 +64,8 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 	
 	public void run() {
 		for (;;){
-			//long startTime = System.currentTimeMillis();
-			
-//			playerOneShip.move(screenWidth, screenHeight);
-//			if(isMultiplayer)
-//				playerTwoShip.move(screenWidth, screenHeight);
-			
 			handleKeyboardInputs();
 			repaint();
-		
 			
 			try {
 				Thread.sleep(20);
@@ -80,10 +75,40 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 	}
 	
 	private void handleKeyboardInputs() {
+		ArrayList<Bullets> bulletsToDelete = new ArrayList<Bullets>();
+		
+		for(Bullets b : bullets)
+		{
+			if(b.distanceFromShootLocation > screenWidth)
+			{
+				bulletsToDelete.add(b);
+				continue;
+			}
+			b.standardMove(screenWidth, screenHeight);
+		}
+		
+		bullets.removeAll(bulletsToDelete);
+		
 		if(playerOneShip.upPress)
 			playerOneShip.accelerate();
 		if(playerOneShip.turnPress)
 			playerOneShip.turn();
+		if(playerOneShip.shotPress)
+		{
+			long currentTime = System.currentTimeMillis();
+			
+			if(currentTime > lastShotTime1 + 200)
+			{
+				playerOneShip.setShotCountOrReset(true); //reset shot count
+			} 
+			if(playerOneShip.getShotCount() < 3)
+			{
+				bullets.add(new Bullets(playerOneShip));
+				lastShotTime1 = System.currentTimeMillis();
+			}
+
+			playerOneShip.shotPress = false;			
+		}
 		playerOneShip.standardMove(screenWidth, screenHeight);
 		
 		if(isMultiplayer) {
@@ -91,6 +116,22 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 				playerTwoShip.accelerate();
 			if(playerTwoShip.turnPress)
 				playerTwoShip.turn();
+			if(playerTwoShip.shotPress)
+			{
+				long currentTime = System.currentTimeMillis();
+				
+				if(currentTime > lastShotTime2 + 200)
+				{
+					playerTwoShip.setShotCountOrReset(true); //reset shot count
+				} 
+				if(playerTwoShip.getShotCount() < 3)
+				{
+					bullets.add(new Bullets(playerTwoShip));
+					lastShotTime2 = System.currentTimeMillis();
+				}
+
+				playerTwoShip.shotPress = false;			
+			}
 			playerTwoShip.standardMove(screenWidth, screenHeight);	
 		}
 	}
@@ -136,6 +177,10 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 					playerOneShip.stopTurning();
 				break;
 			case(KeyEvent.VK_EQUALS): //Firing
+				if(press)
+					playerOneShip.shoot();
+				else
+					playerOneShip.stopShooting();
 				break;
 			
 			//Player 2 movements
@@ -158,6 +203,10 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 					playerTwoShip.stopTurning();
 				break;
 			case(KeyEvent.VK_SPACE):
+				if(press)
+					playerTwoShip.shoot();
+				else
+					playerTwoShip.stopShooting();
 				break;
 			
 			case(KeyEvent.VK_ENTER): //Start game after pause

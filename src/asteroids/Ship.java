@@ -3,22 +3,39 @@ package asteroids;
 import java.awt.Color;
 import java.awt.Graphics;
 
-import javax.sql.rowset.spi.SyncResolver;
-
-public class Ship { //implements AsteroidsObj
-	private double xPos, yPos, angle;
+public class Ship implements AsteroidsObj {
+	private double angle;
 	private boolean isPlayerTwo;
-	private double[] velocity = {0, 0};
-	private boolean velocityUpdated = false, angleUpdated = false;
-	public boolean upPress = false, turnPress = false;
+	public boolean upPress = false, turnPress = false, shotPress = false;
 	private AngleMultiplier rotateDir = AngleMultiplier.NONE;
-
+	private double[] velocity = {0, 0}, position = {0, 0};
+	private int shotCount = 0;
+	
 	public Ship(int x, int y, double ang, boolean isSecond)
 	{
-		xPos = x;
-		yPos = y;
+		position[0] = x;
+		position[1] = y;
 		angle = ang;
 		isPlayerTwo = isSecond;
+	}
+	
+	public double[] getVelocity() {
+		return velocity;
+	}
+	
+	public double[] getPosition() {
+		return position;
+	}
+	
+	public double getAngle()
+	{
+		return angle;
+	}
+	
+	public int getPlayer() {
+		if(isPlayerTwo)
+			return 2;
+		return 1;
 	}
 	
 	public void draw(Graphics g){
@@ -31,44 +48,19 @@ public class Ship { //implements AsteroidsObj
 			g.setColor(Color.MAGENTA);
 		
 		for (int i = 0; i < 4; i++) {
-			newX[i] = (int) (baseX[i] * Math.cos(angle) - baseY[i] * Math.sin(angle) + xPos + .5); 
-			newY[i] = (int) (baseX[i] * Math.sin(angle) + baseY[i] * Math.cos(angle) + yPos + .5);
+			newX[i] = (int) (baseX[i] * Math.cos(angle) - baseY[i] * Math.sin(angle) + position[0] + .5); 
+			newY[i] = (int) (baseX[i] * Math.sin(angle) + baseY[i] * Math.cos(angle) + position[1] + .5);
 		}
 		
 		g.drawPolygon(newX, newY, 4);
 	}
-
-	public void move(int width, int height) {
-		angleUpdated = false;
-		velocityUpdated = false;
-		
-		if(turnPress)
-		{
-			angle += (rotateDir.index() * .1);
-			angle = keepVariableWithinRange(angle, 0, (2*Math.PI));
-		}
-		if(upPress)
-		{
-			velocity[0] += .25 * Math.cos(angle);
-			velocity[1] += .25 * Math.sin(angle);
-		}
-		
-		xPos += velocity[0];
-		yPos += velocity[1];
-		
-		xPos = keepVariableWithinRange(xPos, 0, width);
-		yPos = keepVariableWithinRange(yPos, 0, height);
-		
-		velocity[0] = velocity[0] * .95;
-		velocity[1] = velocity[1] * .95;
-	}
 	
 	public void standardMove(int width, int height) {
-		xPos += velocity[0];
-		yPos += velocity[1];
+		position[0] += velocity[0];
+		position[1] += velocity[1];
 		
-		xPos = keepVariableWithinRange(xPos, 0, width);
-		yPos = keepVariableWithinRange(yPos, 0, height);
+		position[0] = keepVariableWithinRange(position[0], 0, width);
+		position[1] = keepVariableWithinRange(position[1], 0, height);
 		
 		velocity[0] = velocity[0] * .95;
 		velocity[1] = velocity[1] * .95;
@@ -124,5 +116,24 @@ public class Ship { //implements AsteroidsObj
 	        return index; 
 	    }
 
+	}
+
+	public void shoot() {
+		shotPress = true;
+	}
+	
+	public void stopShooting() {
+		shotPress = false;
+	}
+
+	public int getShotCount() {
+		return shotCount;
+	}
+	
+	public void setShotCountOrReset(boolean reset) {
+		if(!reset)
+			shotCount++;
+		else
+			shotCount = 0;
 	}
 }

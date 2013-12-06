@@ -15,7 +15,7 @@ public class Asteroid implements AsteroidsObj {
 	}
 
 	@Override
-	public void move(int width, int height) {
+	public void standardMove(int width, int height) {
 		// TODO Auto-generated method stub
 		
 	}
