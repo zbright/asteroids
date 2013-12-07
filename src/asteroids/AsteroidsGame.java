@@ -35,6 +35,7 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 	private int level;
 	private boolean playerOneGameOver = false;
 	private boolean playerTwoGameOver = false;
+	private boolean paused = true;
 	
 	public AsteroidsGame() {
 		super();
@@ -63,13 +64,24 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 			a.draw(g);
 		
 		Font font = new Font("Veranda", Font.PLAIN, 25);
-		g.setColor(Color.WHITE);
+		
+		if(paused)
+			g.setColor(Color.DARK_GRAY);
+		else
+			g.setColor(Color.WHITE);
+			
+		
 		g.setFont(font);
         g.drawString("Level : " + level, screenWidth / 2, screenHeight - 50);
         
 		//Draw the players ship and score/lives
 		if(playerOneShip != null) {
-			g.setColor(Color.CYAN);
+			if(!paused)
+				playerOneShip.color = Color.CYAN;
+			else
+				playerOneShip.color = Color.DARK_GRAY;
+			
+			g.setColor(playerOneShip.color);			
 			g.drawString("Player 1: " + "Lives : " + playerOneShip.lives + " Score : " + playerOneShip.score, 0, screenHeight - 75); 
 			
 			if(!playerOneGameOver)
@@ -77,7 +89,13 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 		}
 		
 		if(isMultiplayer && playerTwoShip != null) {
-			g.setColor(Color.MAGENTA);
+			if(!paused)
+				playerTwoShip.color = Color.MAGENTA;
+			else
+				playerTwoShip.color = Color.DARK_GRAY;
+			
+			g.setColor(playerTwoShip.color);
+			
 			g.drawString("Player 2: " + "Lives : " + playerTwoShip.lives + " Score : " + playerTwoShip.score, 0, screenHeight - 50);
 			
 			if(!playerTwoGameOver)
@@ -89,13 +107,17 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 	
 	public void run() {
 		for (;;){
-			if(asteroids.isEmpty()) {
-				goToNextLevel();
-			}
-			handleKeyboardInputs();
 			
-			checkObjectsForCollision();
-			
+				if(asteroids.isEmpty()) {
+					goToNextLevel();
+				}
+				
+				handleKeyboardInputs();
+				
+				if(!paused) {
+					checkObjectsForCollision();
+				}
+				
 			repaint();
 			
 			try {
@@ -177,6 +199,7 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 	}
 
 	private void goToNextLevel() {
+		paused = true;
 		level++;
 		
 		bullets.clear();
@@ -229,6 +252,9 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 		{
 			a.standardMove(screenWidth, screenHeight);
 		}
+		
+		if(paused)
+			return;
 		
 		if(playerOneShip.upPress)
 			playerOneShip.accelerate();
@@ -351,6 +377,8 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 				break;
 			
 			case(KeyEvent.VK_ENTER): //Start game after pause
+				if(press)
+					paused = !paused;
 				break;
 			case(KeyEvent.VK_ESCAPE): //Bring up pause menu
 				break;

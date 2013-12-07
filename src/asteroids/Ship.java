@@ -13,6 +13,7 @@ public class Ship extends Drawable implements AsteroidsObj {
 	public int lives;
 	public int score;
 	public boolean isDead = false;
+	public Color color = Color.DARK_GRAY;
 	
 	public Ship(int x, int y, double ang, boolean isSecond)
 	{
@@ -46,12 +47,7 @@ public class Ship extends Drawable implements AsteroidsObj {
 	
 	public void draw(Graphics g){
 		int[] baseX = {20, -12, -4, -12}, baseY = {0, -10, 0, 10};  
-		
-		Color color = Color.CYAN;
-		
-		if(isPlayerTwo)
-			color = Color.MAGENTA;
-		
+
 		drawObject(g, baseX, baseY, color);
 	}
 	

@@ -99,7 +99,7 @@ public class Asteroid extends Drawable implements AsteroidsObj {
 
 	public boolean checkForCollision(Ship ship) {
 		double distance = getMiddle().distance(ship.getMiddle());
-		if(distance > astLevel.index / 2 || ship.isDead)
+		if(distance > astLevel.index / 2 + 15 || ship.isDead)
 			return false;
 		
 		return true;
