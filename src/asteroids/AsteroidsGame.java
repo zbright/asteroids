@@ -2,6 +2,7 @@ package asteroids;
 
 import java.applet.Applet;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -16,7 +17,11 @@ import java.awt.geom.Point2D;
 import java.awt.Toolkit;
 import java.util.ArrayList;
 
+import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 
 import asteroids.Asteroid.AsteroidLevel;
 
@@ -57,6 +62,12 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 	private boolean alienDestroyed = false;
 	private boolean gamePaused = false;
 	
+	private boolean displayPauseMenu = false;
+	private String[] buttonNames = {"Continue", "Create Gravitational Object: ", "Gravitational Object Visible: ", "Free Play: ", "Number Of Astroids: ",
+			"Reset High Scores", "Save Game", "Load Game", "Starting Level: ", "Multiplayer: ", "Quit"};
+	 
+	private JFrame frame;
+	
 	public AsteroidsGame() {
 		super();
 		addKeyListener(this);
@@ -76,9 +87,11 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
         RenderingHints render = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         g.setRenderingHints(render);
-		
+        
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, screenWidth, screenHeight);
+		
+		
 		
 		for(Bullets b : bullets)
 			b.draw(g);
@@ -141,10 +154,12 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 	}
 	
 	public void run() {
+		boolean i = false;
 		for (;;){
 			
-			if(!gamePaused) {
-					
+			if(!displayPauseMenu) {
+				i = false;
+
 				if(asteroids.isEmpty()) {
 					goToNextLevel();
 				}
@@ -153,6 +168,32 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 				
 				if(!paused) {
 					checkObjectsForCollision();
+				}			
+				repaint();
+			}
+			else
+			{
+				if(!i) {
+					JDialog g = new JDialog();
+			        g.setTitle("The Store");
+			        g.setSize(500, 500);
+			        g.setLocation(screenWidth / 2 - 150, screenHeight / 2 - 150);
+			        
+			        Container pane = g.getContentPane();
+			        pane.setLayout(null);
+
+			        int count = 0;
+			        for(String s : buttonNames)
+			        {
+				        JButton b = new JButton(s);
+				        b.setBounds(0, count * 25, 200, 25);
+				        //b.addActionListener( new StoreItem1Handler() );
+				        b.setVisible(true);
+				        pane.add(b);
+				        count++;
+			        }
+			        g.setVisible(true);
+					i = true;
 				}
 			}
 			
@@ -603,9 +644,7 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 					paused = !paused;
 				break;
 			case(KeyEvent.VK_ESCAPE): //Bring up pause menu
-				if(press)
-					gamePaused = !gamePaused;
-					//open menu
+				displayPauseMenu = true;
 				break;
 			case(KeyEvent.VK_END): //Exit
 				break;
@@ -622,15 +661,19 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 						
 		JFrame frame = new JFrame("Asteroids");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.add(asteroids);
+		//frame.add(asteroids);
 		frame.setSize(screenWidth, screenHeight);
 		frame.setVisible(true);
+		
+		asteroids.frame = frame;
 		
 		asteroids.spinNewThreadAndSetupGraphics();
 		asteroids.start();
 	}
 
 	private void spinNewThreadAndSetupGraphics() {
+		frame.add(this);
+		
 		image = createImage(screenWidth, screenHeight);
 		graphics = image.getGraphics();
 		thread = new Thread(this);
