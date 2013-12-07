@@ -30,19 +30,29 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 	private List<Bullets> evilBullets;
 	private Ship playerOneShip;
 	private Ship playerTwoShip;
+	
 	private boolean isMultiplayer;
+	private boolean isGravObjActive;
+	private boolean isGravObjVisible;
+	private GravitationalObject gravObj;
+	
 	private long lastShotTime1;
 	private long lastShotTime2;
 	private long lastShotTimeAlien;
 	private long lastShotTimeRogue;
+	
 	private Image image;
 	private Graphics graphics;
 	private int level;
+	
 	private boolean playerOneGameOver = false;
 	private boolean playerTwoGameOver = false;
+	
 	private boolean paused = true;
+	
 	private RogueShip rogue;
 	private boolean rogueDestroyed = false;
+	
 	private AlienShip alien;
 	private boolean alienDestroyed = false;
 	
@@ -55,7 +65,9 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 		asteroids = new ArrayList<Asteroid>();
 		evilBullets = new ArrayList<Bullets>();
 		
-		isMultiplayer = false;
+		isMultiplayer = true;
+		isGravObjActive = true;
+		isGravObjVisible = true;
 	}
 
 	public void paint(Graphics gGeneric) {
@@ -76,6 +88,9 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 		for(Asteroid a : asteroids)
 			a.draw(g);
 		
+		if(gravObj != null && isGravObjActive && isGravObjVisible)
+			gravObj.draw(g);
+		
 		Font font = new Font("Veranda", Font.PLAIN, 25);
 		
 		if(paused)
@@ -95,7 +110,7 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 				playerOneShip.color = Color.DARK_GRAY;
 			
 			g.setColor(playerOneShip.color);			
-			g.drawString("Player 1: " + "Lives : " + playerOneShip.lives + " Score : " + playerOneShip.score, 0, screenHeight - 75); 
+			g.drawString("Player 1: " + "Lives : " + playerOneShip.lives + " Score : " + playerOneShip.score, 0, screenHeight - 50); 
 			
 			if(!playerOneGameOver)
 				playerOneShip.draw(g);
@@ -109,7 +124,7 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 			
 			g.setColor(playerTwoShip.color);
 			
-			g.drawString("Player 2: " + "Lives : " + playerTwoShip.lives + " Score : " + playerTwoShip.score, 0, screenHeight - 50);
+			g.drawString("Player 2: " + "Lives : " + playerTwoShip.lives + " Score : " + playerTwoShip.score, 0, screenHeight - 75);
 			
 			if(!playerTwoGameOver)
 				playerTwoShip.draw(g);
@@ -347,6 +362,9 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 		
 		bullets.clear();
 		
+		if(isGravObjActive)
+			gravObj = new GravitationalObject(screenWidth, screenHeight);
+		
 		if(level % 2 == 0) {
 			rogueDestroyed = false;
 			rogue = new RogueShip(screenWidth, screenHeight, level);
@@ -456,6 +474,8 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 			playerOneShip.accelerate();
 		if(playerOneShip.turnPress)
 			playerOneShip.turn();
+		if(isGravObjActive)
+			playerOneShip.adjustForGrav(screenWidth, screenHeight);
 		if(playerOneShip.shotPress)
 		{
 			long currentTime = System.currentTimeMillis();
@@ -479,6 +499,8 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 				playerTwoShip.accelerate();
 			if(playerTwoShip.turnPress)
 				playerTwoShip.turn();
+			if(isGravObjActive)
+				playerTwoShip.adjustForGrav(screenWidth, screenHeight);
 			if(playerTwoShip.shotPress)
 			{
 				long currentTime = System.currentTimeMillis();

@@ -136,4 +136,14 @@ public class Ship extends Drawable implements AsteroidsObj {
 		
 		return true;
 	}
+
+	public void adjustForGrav(int screenWidth, int screenHeight) {
+		double dX = getMiddle().getX() - screenWidth/2;
+		double dY = getMiddle().getY() - screenHeight/2;
+		
+		double a = Math.atan2(dY, dX);
+		
+		velocity[0] -= .1 * Math.cos(a);
+		velocity[1] -= .1 * Math.sin(a);
+	}
 }
