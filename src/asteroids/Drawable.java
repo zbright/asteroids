@@ -8,7 +8,7 @@ public abstract class Drawable {
 	protected double angle;
 	protected double[] velocity = {0, 0}, position = {0, 0};
 	
-	protected void drawObject(Graphics g, int[] xPoints, int[] yPoints, Color color)
+	protected void drawObject(Graphics g, int[] xPoints, int[] yPoints, Color color, boolean fill)
 	{
 		int len = xPoints.length;
 		int[] newX = new int[len], newY = new int[len];
@@ -18,7 +18,11 @@ public abstract class Drawable {
 			newY[i] = (int)(xPoints[i] * Math.sin(angle) + yPoints[i] * Math.cos(angle) + position[1] + 0.5);
 	    }
 	    g.setColor(color);
-	    g.drawPolygon(newX, newY, len);
+	    
+	    if(!fill)
+	    	g.drawPolygon(newX, newY, len);
+	    else
+	    	g.fillPolygon(newX, newY, len);
 	}
 	
 	protected double keepVariableWithinRange(double val, double min, double max) {
@@ -32,5 +36,18 @@ public abstract class Drawable {
 	
 	protected Point2D getMiddle() {
 		return new Point2D.Double(position[0], position[1]);
+	}
+	
+	public double[] getVelocity() {
+		return velocity;
+	}
+	
+	public double[] getPosition() {
+		return position;
+	}
+	
+	public double getAngle()
+	{
+		return angle;
 	}
 }

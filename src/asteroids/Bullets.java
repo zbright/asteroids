@@ -7,7 +7,7 @@ public class Bullets extends Drawable implements AsteroidsObj{
 	public double distanceFromShootLocation = 0;
 	public int playerOrigin = 0;
 	
-	public Bullets(Ship ship)
+	public Bullets(Drawable ship)
 	{
 		double[] shipVelocity = ship.getVelocity();
 		double[] shipPosition = ship.getPosition();
@@ -17,9 +17,11 @@ public class Bullets extends Drawable implements AsteroidsObj{
 		velocity[0] = shipVelocity[0] + (21 * Math.cos(ship.getAngle()));
 		velocity[1] = shipVelocity[1] + (21 * Math.sin(ship.getAngle()));
 		
-		playerOrigin = ship.getPlayer();
-		
-		ship.setShotCountOrReset(false); //increment shot count
+		if(ship instanceof Ship) {
+			playerOrigin = ((Ship)ship).getPlayer();
+			
+			((Ship)ship).setShotCountOrReset(false); //increment shot count
+		}
 	}
 
 	@Override

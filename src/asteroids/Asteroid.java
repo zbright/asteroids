@@ -2,7 +2,6 @@ package asteroids;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.geom.Point2D;
 import java.util.List;
 import java.util.Random;
 
@@ -62,7 +61,7 @@ public class Asteroid extends Drawable implements AsteroidsObj {
 		
 		Color color = Color.GRAY;
 		
-		drawObject(g, baseX, baseY, color);
+		drawObject(g, baseX, baseY, color, false);
 	}
 
 	@Override

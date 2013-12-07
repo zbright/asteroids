@@ -3,8 +3,6 @@ package asteroids;
 import java.awt.Color;
 import java.awt.Graphics;
 
-import com.sun.org.apache.xpath.internal.operations.And;
-
 public class Ship extends Drawable implements AsteroidsObj {
 	private boolean isPlayerTwo;
 	public boolean upPress = false, turnPress = false, shotPress = false;
@@ -26,19 +24,6 @@ public class Ship extends Drawable implements AsteroidsObj {
 		score = 0;
 	}
 	
-	public double[] getVelocity() {
-		return velocity;
-	}
-	
-	public double[] getPosition() {
-		return position;
-	}
-	
-	public double getAngle()
-	{
-		return angle;
-	}
-	
 	public int getPlayer() {
 		if(isPlayerTwo)
 			return 2;
@@ -48,7 +33,7 @@ public class Ship extends Drawable implements AsteroidsObj {
 	public void draw(Graphics g){
 		int[] baseX = {20, -12, -4, -12}, baseY = {0, -10, 0, 10};  
 
-		drawObject(g, baseX, baseY, color);
+		drawObject(g, baseX, baseY, color, false);
 	}
 	
 	public void standardMove(int width, int height) {
@@ -142,5 +127,13 @@ public class Ship extends Drawable implements AsteroidsObj {
 		position[0] = x;
 		position[1] = y;
 		angle = ang;
+	}
+	
+	public boolean checkForCollision(Bullets bullet) {
+		double distance = getMiddle().distance(bullet.getMiddle());
+		if(distance > 15)
+			return false;
+		
+		return true;
 	}
 }
