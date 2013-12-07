@@ -726,7 +726,14 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 			}
 			
 		} else if (buttonPressed == buttonNames[2]) { // Gravitational Object Visible
-
+			
+			if((gravObj != null) && isGravObjActive && isGravObjVisible) {
+				
+				isGravObjVisible = !isGravObjVisible;
+			}
+			else if((gravObj != null) && isGravObjActive && !isGravObjVisible) {
+				isGravObjVisible = !isGravObjVisible;
+			}
 		} else if (buttonPressed == buttonNames[3]) { // Free Play
 
 		} else if (buttonPressed == buttonNames[4]) { // Number of Asteroids
