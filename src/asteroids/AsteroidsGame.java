@@ -45,6 +45,7 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 	private boolean rogueDestroyed = false;
 	private AlienShip alien;
 	private boolean alienDestroyed = false;
+	private boolean gamePaused = false;
 	
 	public AsteroidsGame() {
 		super();
@@ -127,6 +128,8 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 	public void run() {
 		for (;;){
 			
+			if(!gamePaused) {
+					
 				if(asteroids.isEmpty()) {
 					goToNextLevel();
 				}
@@ -136,7 +139,8 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 				if(!paused) {
 					checkObjectsForCollision();
 				}
-				
+			}
+			
 			repaint();
 			
 			try {
@@ -384,7 +388,7 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 		
 		return ship;
 	}
-
+	
 	private void handleKeyboardInputs() {
 		ArrayList<Bullets> bulletsToDelete = new ArrayList<Bullets>();
 		
@@ -577,6 +581,9 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 					paused = !paused;
 				break;
 			case(KeyEvent.VK_ESCAPE): //Bring up pause menu
+				if(press)
+					gamePaused = !gamePaused;
+					//open menu
 				break;
 			case(KeyEvent.VK_END): //Exit
 				break;
