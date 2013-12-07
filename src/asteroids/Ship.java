@@ -12,6 +12,7 @@ public class Ship extends Drawable implements AsteroidsObj {
 	public int score;
 	public boolean isDead = false;
 	public Color color = Color.DARK_GRAY;
+	public boolean isFreePlay;
 	
 	public Ship(int x, int y, double ang, boolean isSecond)
 	{
@@ -115,7 +116,7 @@ public class Ship extends Drawable implements AsteroidsObj {
 		
 		lives--;
 		
-		if(lives <= 0) {
+		if(lives <= 0 && !isFreePlay) {
 			isDead = true;
 			return true;
 		}

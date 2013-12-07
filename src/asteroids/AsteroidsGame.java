@@ -10,12 +10,13 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.util.List;
-import java.util.Random;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.geom.Point2D;
 import java.awt.Toolkit;
 import java.util.ArrayList;
@@ -23,9 +24,7 @@ import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
 
 import asteroids.Asteroid.AsteroidLevel;
 
@@ -44,6 +43,8 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 	private boolean isMultiplayer;
 	private boolean isGravObjActive;
 	private boolean isGravObjVisible;
+	private boolean isFreePlay;
+	
 	private GravitationalObject gravObj;
 
 	private long lastShotTime1;
@@ -65,17 +66,15 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 
 	private AlienShip alien;
 	private boolean alienDestroyed = false;
-	private boolean gamePaused = false;
-
 	private boolean displayPauseMenu = false;
 	private boolean openDialog = true;
 	
 	private JDialog dialog;
 	
 	private String[] buttonNames = { "Continue",
-			"Toggle Gravitational Object: ", "Gravitational Object Visible: ",
-			"Free Play: ", "Number Of Astroids: ", "Reset High Scores",
-			"Save Game", "Load Game", "Starting Level: ", "Multiplayer: ",
+			"Toggle Gravitational Object", "Toggle Gravitational Object Visible",
+			"Toggle Free Play", "Change Number Of Astroids", "Reset High Scores",
+			"Save Game", "Load Game", "Change Level", "Multiplayer: ",
 			"Quit" };
 
 	private JFrame frame;
@@ -92,9 +91,9 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 		asteroids = new ArrayList<Asteroid>();
 		evilBullets = new ArrayList<Bullets>();
 
-		isMultiplayer = true;
-		isGravObjActive = true;
-		isGravObjVisible = true;
+		isMultiplayer = false;
+		isGravObjActive = false;
+		isGravObjVisible = false;
 	}
 
 	public void paint(Graphics gGeneric) {
@@ -129,7 +128,7 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 
 		g.setFont(font);
 		g.drawString("Level : " + level, screenWidth / 2, screenHeight - 50);
-
+		String livesString = "N/A";
 		// Draw the players ship and score/lives
 		if (playerOneShip != null) {
 			if (!paused)
@@ -138,7 +137,10 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 				playerOneShip.color = Color.DARK_GRAY;
 
 			g.setColor(playerOneShip.color);
-			g.drawString("Player 1: " + "Lives : " + playerOneShip.lives
+			
+			if(!isFreePlay)
+				livesString = String.valueOf(playerOneShip.lives);
+			g.drawString("Player 1: " + "Lives : " + livesString
 					+ " Score : " + playerOneShip.score, 0, screenHeight - 50);
 
 			if (!playerOneGameOver)
@@ -152,8 +154,9 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 				playerTwoShip.color = Color.DARK_GRAY;
 
 			g.setColor(playerTwoShip.color);
-
-			g.drawString("Player 2: " + "Lives : " + playerTwoShip.lives
+			if(!isFreePlay)
+				livesString = String.valueOf(playerTwoShip.lives);
+			g.drawString("Player 2: " + "Lives : " + livesString
 					+ " Score : " + playerTwoShip.score, 0, screenHeight - 75);
 
 			if (!playerTwoGameOver)
@@ -188,12 +191,23 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 			} else {
 				if (openDialog) {
 					dialog = new JDialog();
-					dialog.setTitle("The Store");
+					dialog.setTitle("Options");
 					dialog.setSize(215, 315);
 					dialog.setLocation(screenWidth / 2 - 150, screenHeight / 2 - 150);
-
+					
+					WindowAdapter exitListener = new WindowAdapter() {
+						@Override
+			            public void windowClosing(WindowEvent e) {
+							displayPauseMenu = !displayPauseMenu;
+							openDialog = !openDialog;
+			            }
+			        };
+			        
+			        dialog.addWindowListener(exitListener);
+					
 					Container pane = dialog.getContentPane();
 					pane.setLayout(null);
+					
 					int count = 0;
 					for (String s : buttonNames) {
 						JButton b = new JButton(s);
@@ -426,7 +440,13 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 	private void goToNextLevel() {
 		paused = true;
 		level++;
-
+		
+		boolean manuallyChanged = false;
+		
+		if(!asteroids.isEmpty())
+			manuallyChanged = true;
+		
+		asteroids.clear(); //Just in case manually changed level
 		bullets.clear();
 
 		if (isGravObjActive)
@@ -436,11 +456,15 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 			rogueDestroyed = false;
 			rogue = new RogueShip(screenWidth, screenHeight, level);
 		}
+		else 
+			rogue = null;
 
 		if (level % 3 == 0) {
 			alienDestroyed = false;
 			alien = new AlienShip(screenWidth, screenHeight, level);
 		}
+		else
+			alien = null;
 		// Create asteroids (level 1 has 3, 2 has 4, etc)
 		for (int i = 0; i < Math.min(level + 2, 20); i++)
 			asteroids.add(new Asteroid(screenWidth, screenHeight, level,
@@ -455,11 +479,11 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 			playerOneShip = createOrUpdateShip(playerOneShip, screenWidth / 2,
 					screenHeight / 2, 0, false);
 
-		if (level > 1) {
+		if (level > 1 && !manuallyChanged) {
 			if (!playerOneShip.isDead)
-				playerOneShip.score += 100;
+				playerOneShip.score += 100 * (level - 1);
 			if (isMultiplayer && !playerTwoShip.isDead)
-				playerTwoShip.score += 100;
+				playerTwoShip.score += 100 * (level - 1);
 		}
 	}
 
@@ -498,7 +522,7 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 
 		if (rogue != null && !rogueDestroyed) {
 			long currentTime = System.currentTimeMillis();
-			if (currentTime - lastShotTimeAlien > (200 * Math.max(-1 * level
+			if (currentTime - lastShotTimeRogue > (200 * Math.max(-1 * level
 					+ 25, 0))) {
 				evilBullets.add(new Bullets(rogue));
 				lastShotTimeRogue = System.currentTimeMillis();
@@ -735,9 +759,39 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 				isGravObjVisible = !isGravObjVisible;
 			}
 		} else if (buttonPressed == buttonNames[3]) { // Free Play
-
+			isFreePlay = !isFreePlay;
+			playerOneShip.isFreePlay = isFreePlay;
+			if(isMultiplayer)
+				playerTwoShip.isFreePlay = isFreePlay;
+			
 		} else if (buttonPressed == buttonNames[4]) { // Number of Asteroids
-
+			while(true) {
+				String s = (String)JOptionPane.showInputDialog(frame, "How many asteroids would you like?", "Asteroid Count Selector", 
+						JOptionPane.PLAIN_MESSAGE, null, null, asteroids.size());
+				
+				//Hit cancel
+				if(s == null)
+					break;
+				if(stringIsNumeric(s)) {
+					int d = Integer.parseInt(s);
+					if(d == 0)
+						asteroids.clear();
+					if(d < asteroids.size()) {
+						for(int i = 0; i < asteroids.size(); i++) {
+							if(i >= d)
+								asteroids.remove(i);
+						}
+					}
+					else {
+						for(int i = asteroids.size(); i < d; i++) {
+							asteroids.add(new Asteroid(screenWidth, screenHeight, level,
+									AsteroidLevel.BIG));
+						}
+					}
+						
+					break;
+				}
+			}
 		} else if (buttonPressed == buttonNames[5]) { // Reset High Score
 
 		} else if (buttonPressed == buttonNames[6]) { // Save Game
@@ -745,9 +799,24 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 		} else if (buttonPressed == buttonNames[7]) { // Load Game
 
 		} else if (buttonPressed == buttonNames[8]) { // Starting Level
-		
+			while(true) {
+				String s = (String)JOptionPane.showInputDialog(frame, "What level should we go to?", "Level Selector", 
+						JOptionPane.PLAIN_MESSAGE, null, null, level);
+				
+				//Hit cancel
+				if(s == null)
+					break;
+				if(stringIsNumeric(s)) {
+					int d = Integer.parseInt(s) - 1; //increments when we go to next level
+					d = Math.max(d, 0);
+					level = d;
+					goToNextLevel();
+						
+					break;
+				}
+			}
 		} else if (buttonPressed == buttonNames[9]) { // Multiplayer
-		
+			isMultiplayer = !isMultiplayer;
 		} else if (buttonPressed == buttonNames[10]) { // Quit
 			//Ask for confirmation
 			JDialog qDialog;
@@ -766,9 +835,16 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 				
 			}else{
 			}
-			//qDialog.setVisible(true);
-			
-
 		}
+	}
+
+	private boolean stringIsNumeric(String s) {
+		try {
+			int d = Integer.parseInt(s);
+		}
+		catch(NumberFormatException e){
+			return false;
+		}
+		return true;
 	}
 }
