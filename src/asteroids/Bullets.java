@@ -23,10 +23,37 @@ public class Bullets extends Drawable implements AsteroidsObj{
 			((Ship)ship).setShotCountOrReset(false); //increment shot count
 		}
 	}
+	
+	public Bullets(AlienShip alien, Ship ship)
+	{
+		double[] alienPosition = alien.getPosition();
+		
+		position[0] = alienPosition[0];
+		position[1] = alienPosition[1];
+		
+		double alienX = alien.getMiddle().getX();
+		double alienY = alien.getMiddle().getY();
+		double shipX = ship.getMiddle().getX();
+		double shipY = ship.getMiddle().getY();
+		
+		double dX = shipX - alienX;
+		double dY = shipY - alienY;
+		
+		angle = Math.atan2(dY, dX);
+		
+		velocity[0] = (21 * Math.cos(angle));
+		velocity[1] = (21 * Math.sin(angle));
+		
+		alien.setShotCountOrReset(false); //increment shot count
+	}
 
 	@Override
 	public void draw(Graphics g) {
-		g.setColor(Color.WHITE);
+		if(playerOrigin == 0)
+			g.setColor(Color.RED);
+		else
+			g.setColor(Color.WHITE);
+		
 		g.fillOval((int)position[0], (int)position[1], 5, 5);
 	}
 

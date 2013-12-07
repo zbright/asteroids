@@ -59,5 +59,13 @@ public class RogueShip extends Drawable implements AsteroidsObj {
 		
 		return true;
 	}
+	
+	public boolean checkForCollision(Ship ship) {
+		double distance = getMiddle().distance(ship.getMiddle());
+		if(distance > 30)
+			return false;
+		
+		return true;
+	}
 
 }

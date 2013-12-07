@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Random;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.geom.Point2D;
 import java.awt.Toolkit;
 import java.util.ArrayList;
 
@@ -32,6 +33,8 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 	private boolean isMultiplayer;
 	private long lastShotTime1;
 	private long lastShotTime2;
+	private long lastShotTimeAlien;
+	private long lastShotTimeRogue;
 	private Image image;
 	private Graphics graphics;
 	private int level;
@@ -40,7 +43,8 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 	private boolean paused = true;
 	private RogueShip rogue;
 	private boolean rogueDestroyed = false;
-	
+	private AlienShip alien;
+	private boolean alienDestroyed = false;
 	
 	public AsteroidsGame() {
 		super();
@@ -51,7 +55,7 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 		asteroids = new ArrayList<Asteroid>();
 		evilBullets = new ArrayList<Bullets>();
 		
-		isMultiplayer = true;
+		isMultiplayer = false;
 	}
 
 	public void paint(Graphics gGeneric) {
@@ -113,6 +117,9 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 		
 		if(rogue != null && !rogueDestroyed)
 			rogue.draw(g);
+		
+		if(alien != null && !alienDestroyed)
+			alien.draw(g);
 		
 		gGeneric.drawImage(image, 0, 0, this);
 	}
@@ -211,9 +218,7 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 					bulletToDelete.add(bullet);
 					
 					rogueDestroyed = true;
-				}
-				
-				if(hit) {
+
 					if(bullet.playerOrigin == 1)
 						playerOneShip.score += 100;
 					else
@@ -229,19 +234,90 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 				bulletToDelete.clear();
 				hit = false;
 			}
+			
+			hit = rogue.checkForCollision(playerOneShip);
+			if(hit) {
+				
+				playerOneGameOver = playerOneShip.died(screenWidth/2, screenHeight/2);
+				rogueDestroyed = true;
+				hit = false;
+			}
+			
+			if(isMultiplayer) {
+				hit = rogue.checkForCollision(playerTwoShip);
+				
+				if(hit) {
+					playerTwoGameOver = playerTwoShip.died(screenWidth/2, screenHeight/2);
+					rogueDestroyed = true;
+					hit = false;
+				}
+			}
+		}
+		
+		//Alien Ship
+		if(alien != null && !alienDestroyed) {
+			for(Bullets b : bullets)
+			{
+				hit = alien.checkForCollision(b);
+				
+				if(hit) {
+					bulletToDelete.add(b);
+					
+					alien.livesLeft--;
+					if(alien.livesLeft <= 0) {
+						alienDestroyed = true;
+						
+						if(b.playerOrigin == 1)
+							playerOneShip.score += 100;
+						else
+							playerTwoShip.score += 100;
+					}
+					break;
+				}
+			}
+			
+			if(hit) {
+				bullets.removeAll(bulletToDelete);
+				bulletToDelete.clear();
+				hit = false;
+			}
+			
+			hit = alien.checkForCollision(playerOneShip);
+			if(hit) {
+				
+				playerOneGameOver = playerOneShip.died(screenWidth/2, screenHeight/2);
+				alien.livesLeft--;
+				if(alien.livesLeft <= 0) 
+					alienDestroyed = true;
+				
+				hit = false;
+			}
+			
+			if(isMultiplayer) {
+				hit = alien.checkForCollision(playerTwoShip);
+				
+				if(hit) {
+					playerTwoGameOver = playerTwoShip.died(screenWidth/2, screenHeight/2);
+					
+					alien.livesLeft--;
+					if(alien.livesLeft <= 0) 
+						alienDestroyed = true;
+					hit = false;
+				}
+			}
 		}
 		
 		//Ships with evil bullets
 		for(Bullets b : evilBullets)
 		{
 			hit = playerOneShip.checkForCollision(b);
-			if(hit) {
+			if(hit && !playerOneShip.isDead) {
 				bulletToDelete.add(b);
 				playerOneGameOver = playerOneShip.died(screenWidth/2, screenHeight/2);
 				continue;
 			}
 			
-			if(isMultiplayer) {
+			if(isMultiplayer && !playerTwoShip.isDead) {
 				hit = playerTwoShip.checkForCollision(b);
 				if(hit) {
 					bulletToDelete.add(b);
@@ -271,9 +347,14 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 		
 		bullets.clear();
 		
-		if(level % 1 == 0) {
+		if(level % 2 == 0) {
 			rogueDestroyed = false;
 			rogue = new RogueShip(screenWidth, screenHeight, level);
+		}
+		
+		if(level % 3 == 0) {
+			alienDestroyed = false;
+			alien = new AlienShip(screenWidth, screenHeight, level);
 		}
 		//Create asteroids (level 1 has 3, 2 has 4, etc)
 		for(int i = 0; i < Math.min(level + 2, 20); i++)
@@ -330,14 +411,44 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener{
 		}
 		
 		if(rogue != null && !rogueDestroyed) {
-			Random random = new Random();
-			double randomShot = random.nextDouble();
-			
-			if(randomShot > .975)
+			long currentTime = System.currentTimeMillis();
+			if(currentTime - lastShotTimeAlien > (200 * Math.max(-1*level+25, 0))) {
 				evilBullets.add(new Bullets(rogue));
+				lastShotTimeRogue = System.currentTimeMillis();
+			}
 			
 			rogue.standardMove(screenWidth, screenHeight);
 		}
+		
+		if(alien != null && !alienDestroyed) {
+			alien.standardMove(screenWidth, screenHeight);
+			
+			long currentTime = System.currentTimeMillis();
+			
+			if(currentTime > lastShotTimeAlien + 200)
+			{
+				alien.setShotCountOrReset(true); //reset shot count
+			} 
+			if(alien.shotCount < 4 && currentTime - lastShotTimeAlien > (200 * Math.max(-1*level+25, 0)))
+			{
+				if(!isMultiplayer)
+					evilBullets.add(new Bullets(alien, playerOneShip));
+				else {
+					//figure out which is closer
+					Point2D oneMiddle = playerOneShip.getMiddle();
+					Point2D twoMiddle = playerTwoShip.getMiddle();
+					Point2D alienMiddle = alien.getMiddle();
+					
+					if((alienMiddle.distance(oneMiddle) > alienMiddle.distance(twoMiddle) && !playerTwoShip.isDead) || playerOneShip.isDead)
+						evilBullets.add(new Bullets(alien, playerTwoShip));
+					else
+						evilBullets.add(new Bullets(alien, playerOneShip));	
+				}
+				
+				lastShotTimeAlien = System.currentTimeMillis();
+			}
+		}
+		
 		if(paused)
 			return;
 		
