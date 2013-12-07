@@ -73,7 +73,7 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 	private JDialog dialog;
 	
 	private String[] buttonNames = { "Continue",
-			"Create Gravitational Object: ", "Gravitational Object Visible: ",
+			"Toggle Gravitational Object: ", "Gravitational Object Visible: ",
 			"Free Play: ", "Number Of Astroids: ", "Reset High Scores",
 			"Save Game", "Load Game", "Starting Level: ", "Multiplayer: ",
 			"Quit" };
@@ -715,7 +715,15 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 			dialog.setVisible(false);
 			dialog.dispose();
 			
-		} else if (buttonPressed == buttonNames[1]) { // Create Gravitational Object
+		} else if (buttonPressed == buttonNames[1]) { // Toggle Gravitational Object
+			
+			if((gravObj != null) && isGravObjActive) {
+				gravObj = null;
+				isGravObjActive = !isGravObjActive;
+			} else if ((gravObj == null && !isGravObjActive)) {
+				gravObj = new GravitationalObject(screenWidth, screenHeight);
+				isGravObjActive = !isGravObjActive;
+			}
 			
 		} else if (buttonPressed == buttonNames[2]) { // Gravitational Object Visible
 
