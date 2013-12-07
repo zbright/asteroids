@@ -36,9 +36,13 @@ public class Asteroid extends Drawable implements AsteroidsObj {
 		Random random = new Random();
 		
 		velocity[0] = random.nextInt(3) - 1 * level * Math.random() * Math.cos(angle);
+		if(velocity[0] < Math.abs(.5))
+			velocity[0] += 1;
 		velocity[0] = keepVariableWithinRange(velocity[0], -10, 10);
 		
 		velocity[1] = random.nextInt(3) - 1 * level * Math.random() *  Math.sin(angle);
+		if(velocity[1] < Math.abs(.5))
+			velocity[1] += 1;
 		velocity[1] = keepVariableWithinRange(velocity[1], -10, 10);
 		
 		astLevel = AsteroidLevel.SMALL;
