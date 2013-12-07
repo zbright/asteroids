@@ -2,10 +2,11 @@ package asteroids;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Random;
 
-public class Asteroid extends Drawable implements AsteroidsObj {
+public class Asteroid extends Drawable implements AsteroidsObj, Serializable{
 	private AsteroidLevel astLevel = AsteroidLevel.NONE;
 	
 	public Asteroid(int x, int y, int level, AsteroidLevel asteroidLevel)

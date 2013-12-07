@@ -2,8 +2,13 @@ package asteroids;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.io.Serializable;
 
-public class Ship extends Drawable implements AsteroidsObj {
+public class Ship extends Drawable implements AsteroidsObj, Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1792670702813617242L;
 	private boolean isPlayerTwo;
 	public boolean upPress = false, turnPress = false, shotPress = false;
 	private AngleMultiplier rotateDir = AngleMultiplier.NONE;

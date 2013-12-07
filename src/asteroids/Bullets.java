@@ -2,8 +2,13 @@ package asteroids;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.io.Serializable;
 
-public class Bullets extends Drawable implements AsteroidsObj{
+public class Bullets extends Drawable implements AsteroidsObj, Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6130812993056887800L;
 	public double distanceFromShootLocation = 0;
 	public int playerOrigin = 0;
 	

@@ -19,6 +19,10 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.geom.Point2D;
 import java.awt.Toolkit;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
@@ -81,6 +85,9 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 
 	private Object[] quitOptions = {"Yes", "No"};
 	
+	private ArrayList<Object> saveList = new ArrayList<Object>();
+	
+	private double[] savePosition = {0.0,0.0};
 	
 	public AsteroidsGame() {
 		super();
@@ -224,7 +231,10 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 			}
 
 			repaint();
-
+			savePosition[0] = playerOneShip.getPosition()[0];
+			savePosition[1] = playerOneShip.getPosition()[1];
+			//printLocation(playerOneShip.getPosition()[0],playerOneShip.getPosition()[1]);
+			
 			try {
 				Thread.sleep(30);
 			} catch (InterruptedException e) {
@@ -795,9 +805,9 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 		} else if (buttonPressed == buttonNames[5]) { // Reset High Score
 
 		} else if (buttonPressed == buttonNames[6]) { // Save Game
-
+			saveGame();
 		} else if (buttonPressed == buttonNames[7]) { // Load Game
-
+			loadGame();
 		} else if (buttonPressed == buttonNames[8]) { // Starting Level
 			while(true) {
 				String s = (String)JOptionPane.showInputDialog(frame, "What level should we go to?", "Level Selector", 
@@ -846,5 +856,60 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 			return false;
 		}
 		return true;
+	}
+	
+	private void saveGame() {
+
+		try{  // Catch errors in I/O if necessary.
+		// Open a file to write to, named SavedObj.sav.
+		FileOutputStream saveFile=new FileOutputStream("SaveObj.sav");
+
+		// Create an ObjectOutputStream to put objects into save file.
+		ObjectOutputStream save = new ObjectOutputStream(saveFile);
+
+		// Now we do the save.
+		save.writeObject(playerOneShip);
+
+		// Close the file.
+		save.close(); // This also closes saveFile.
+		}
+		catch(Exception exc){
+		exc.printStackTrace(); // If there was an error, print the info.
+		}
+
+	}
+	private void loadGame() {
+
+		// Wrap all in a try/catch block to trap I/O errors.
+		try{
+		// Open file to read from, named SavedObj.sav.
+		FileInputStream loadFile = new FileInputStream("SaveObj.sav");
+
+		// Create an ObjectInputStream to get objects from save file.
+		ObjectInputStream load = new ObjectInputStream(loadFile);
+
+		// Now we do the restore.
+		// readObject() returns a generic Object, we cast those back
+		// into their original class type.
+		// For primitive types, use the corresponding reference class.
+		playerOneShip = (Ship) load.readObject();
+		
+		// Close the file.
+		load.close(); // This also closes saveFile.
+		
+//		System.out.println(thread);
+//		System.out.println("\tloadedship position: " + loadedShip.angle + ", " + loadedShip.getPosition()[1]);
+		}
+		catch(Exception exc){
+		exc.printStackTrace(); // If there was an error, print the info.
+		}
+		
+//		System.out.println("\nRestored Object Values:\n");
+//
+//		System.out.println("\tloadedship angle: " );
+//		System.out.println(savePosition[0] + ", " + savePosition[1]);
+	}
+	private void printLocation(double x, double y) {
+		System.out.println("test" + x +", "+ y);
 	}
 }
