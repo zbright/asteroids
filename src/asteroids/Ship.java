@@ -19,7 +19,7 @@ public class Ship extends Drawable implements AsteroidsObj, Serializable {
 	public Color color = Color.DARK_GRAY;
 	public boolean isFreePlay;
 	
-	public Ship(int x, int y, double ang, boolean isSecond)
+	public Ship(double x, double y, double ang, boolean isSecond)
 	{
 		super();
 		position[0] = x;
@@ -107,7 +107,9 @@ public class Ship extends Drawable implements AsteroidsObj, Serializable {
 	public int getShotCount() {
 		return shotCount;
 	}
-	
+	public void setShotCount(int shotcount) {
+		this.shotCount = shotcount;
+	}
 	public void setShotCountOrReset(boolean reset) {
 		if(!reset)
 			shotCount++;

@@ -9,28 +9,21 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
-import java.util.Dictionary;
-import java.util.HashMap;
-import java.util.List;
-import java.util.TreeMap;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.awt.geom.Point2D;
-import java.awt.Toolkit;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -360,9 +353,9 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 			}
 
 			repaint();
-			savePosition[0] = playerOneShip.getPosition()[0];
-			savePosition[1] = playerOneShip.getPosition()[1];
-			// printLocation(playerOneShip.getPosition()[0],playerOneShip.getPosition()[1]);
+//			savePosition[0] = playerOneShip.getPosition()[0];
+//			savePosition[1] = playerOneShip.getPosition()[1];
+//			// printLocation(playerOneShip.getPosition()[0],playerOneShip.getPosition()[1]);
 
 			try {
 				Thread.sleep(30);
@@ -1075,8 +1068,8 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 
 	private void saveGame() {
 
-		try {
-			if (playerOneShip instanceof Ship) {
+//		try {
+			//if (playerOneShip instanceof Ship) {
 				try {
 					FileWriter fileWriter = new FileWriter("savedata.txt");
 
@@ -1086,23 +1079,54 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 							+ playerOneShip.getAngle() + "|"			//angle
 							+ playerOneShip.score + "|"					//score
 							+ playerOneShip.getPlayer() + "|"			//player number
-							+ "\n");			
+							+ playerOneShip.isDead + "|"
+							+ playerOneShip.isFreePlay + "|"
+							+ playerOneShip.upPress + "|"
+							+ Integer.toString(playerOneShip.color.getRGB()) +  "|"
+							+ playerOneShip.getShotCount() + "|"
+							+ playerOneShip.getVelocity()[0] + "|"
+							+ playerOneShip.getVelocity()[1] + "|"
+							+ playerOneShip.turnPress + "\n");			
 
+					
+//					for(int i=0; i<asteroids.size();i++) {
+//						fileWriter.write(asteroids.get(i).position[0] + "|"
+//								+ asteroids.get(i).position[1] + "|"
+//								+ asteroids.get(i).velocity[0] + "|"
+//								+ asteroids.get(i).velocity[1] + "\n");
+//					}
 					fileWriter.close();
 				} catch (Exception e) {
+					e.printStackTrace();
 				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//			//}
+//			if (asteroids instanceof List<?>) {
+//				try {
+//					FileWriter fileWriter = new FileWriter("savedata.txt");
+//					for(int i=0; i<asteroids.size();i++) {
+//						fileWriter.write(asteroids.get(i).position[0] + "|"
+//								+ asteroids.get(i).position[1] + "|"
+//								+ asteroids.get(i).velocity[0] + "|"
+//								+ asteroids.get(i).velocity[1] + "\n");
+//					}
+//					
+//					fileWriter.close();
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 
 	}
 
 	private void loadGame() {
-		Boolean playerBool = true;
+		Color colorColor = null;
+		Boolean playerBool = true, isDeadBool = true, isFreePlayBool = true, upPressBool = true, turnPressBool = true; 
 		Ship loadShip = null;
-		Integer livesInt, xInt = null, yInt = null, scoreInt = null, playerInt = null;
-		Double angDouble = null;
+		Integer livesInt, scoreInt = null, playerInt = null, shotCountInt = null;
+		Double angDouble = null,xDouble = null, yDouble = null, xVelDouble = null, yVelDouble = null;
 		
 		try{
 			File file = new File("savedata.txt");
@@ -1118,45 +1142,61 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 				String angle = split[3];
 				String score = split[4];
 				String player = split[5];
+				String isdead = split[6];
+				String isfreeplay = split[7];
+				String uppress = split[8];
+				String color = split[9];
+				String shotcount = split[10];
+				String xvel = split[11];
+				String yvel = split[12];
+				String turnpress = split[13];
 				
+//				for (String s: split) {
+//					System.out.println(s);
+//				}
 				livesInt = Integer.parseInt(lives);
-				xInt = Integer.parseInt(x);
-				yInt = Integer.parseInt(y);
+				xDouble = Double.parseDouble(x);
+				yDouble = Double.parseDouble(y);
 				angDouble = Double.parseDouble(angle);
 				scoreInt = Integer.parseInt(score);
 				playerInt = Integer.parseInt(player);
+				isDeadBool = Boolean.parseBoolean(isdead);
+				isFreePlayBool = Boolean.parseBoolean(isfreeplay);
+				upPressBool = Boolean.parseBoolean(uppress);
+				
+				colorColor = new Color(Integer.parseInt(color));
+				
+				shotCountInt = Integer.parseInt(shotcount);
+				xVelDouble = Double.parseDouble(xvel);
+				yVelDouble = Double.parseDouble(yvel);
+				turnPressBool = Boolean.parseBoolean(turnpress);
 				
 				if(playerInt == 2) {
 					playerBool = true;
 				}else if (playerInt == 1) {
 					playerBool = false;
 				}
-
+				
 			}
-			loadShip = new Ship(xInt, yInt, angDouble, playerBool);
+			
+			loadShip = new Ship(xDouble, yDouble, angDouble, playerBool);
 			playerOneShip = loadShip;
+			playerOneShip.score = scoreInt;
+			playerOneShip.isDead = isDeadBool;
+			playerOneShip.isFreePlay = isFreePlayBool;
+			playerOneShip.upPress = upPressBool;
+			
+			playerOneShip.color = colorColor;
+			
+			playerOneShip.setShotCount(shotCountInt);
+			playerOneShip.setVelocity(xVelDouble, yVelDouble);
+			playerOneShip.turnPress = turnPressBool;
 			
 			reader.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
-//		try {
-//			File file = new File("highscores.txt");
-//			FileReader reader = new FileReader(file);
-//			BufferedReader bufferReader = new BufferedReader(reader);
-//			String str;
-//
-//			while ((str = bufferReader.readLine()) != null) {
-//				String[] split = str.split("\\|");
-//				String name = split[0];
-//				String score = split[1];
-//				scoreInt = Integer.parseInt(score);
-//				highScores.add(new scoreBoardSlot(scoreInt, name));
-//			}
-//			reader.close();
-//		} catch (Exception e) {
-//		}
 	}
 
 }

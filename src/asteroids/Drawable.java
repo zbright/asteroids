@@ -41,7 +41,10 @@ public abstract class Drawable {
 	public double[] getVelocity() {
 		return velocity;
 	}
-	
+	public void setVelocity(double xVel, double yVel) {
+		velocity[0] = xVel;
+		velocity[1] = yVel;
+	}
 	public double[] getPosition() {
 		return position;
 	}
