@@ -22,17 +22,14 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.geom.Point2D;
 import java.awt.Toolkit;
-
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-
 import java.util.ArrayList;
 
 import javax.swing.JButton;
@@ -45,7 +42,8 @@ import asteroids.Asteroid.AsteroidLevel;
 class scoreBoardSlot {
 	public int score;
 	public String name;
-	public scoreBoardSlot(int s, String n){
+
+	public scoreBoardSlot(int s, String n) {
 		this.score = s;
 		this.name = n;
 	}
@@ -67,7 +65,7 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 	private boolean isGravObjActive;
 	private boolean isGravObjVisible;
 	private boolean isFreePlay;
-	
+
 	private GravitationalObject gravObj;
 
 	private long lastShotTime1;
@@ -91,94 +89,92 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 	private boolean alienDestroyed = false;
 	private boolean displayPauseMenu = false;
 	private boolean openDialog = true;
-	
+
 	private JDialog dialog;
-	
-	private String[] buttonNames = { "Continue",
-			"Toggle Gravitational Object", "Toggle Gravitational Object Visible",
-			"Toggle Free Play", "Change Number Of Astroids", "Reset High Scores",
-			"Save Game", "Load Game", "Change Level", "Toggle Multiplayer",
-			"Quit" };
+
+	private String[] buttonNames = { "Continue", "Toggle Gravitational Object",
+			"Toggle Gravitational Object Visible", "Toggle Free Play",
+			"Change Number Of Astroids", "Reset High Scores", "Save Game",
+			"Load Game", "Change Level", "Toggle Multiplayer", "Quit" };
 
 	private JFrame frame;
 
-	private Object[] quitOptions = {"Yes", "No"};
-	
+	private Object[] quitOptions = { "Yes", "No" };
 
-	//private ArrayList<Object> saveList = new ArrayList<Object>();
-	
-	private double[] savePosition = {0.0,0.0};
-	
+	// private ArrayList<Object> saveList = new ArrayList<Object>();
+
+	private double[] savePosition = { 0.0, 0.0 };
 
 	private ArrayList<scoreBoardSlot> highScores = new ArrayList<scoreBoardSlot>();
 	private boolean highScoreDisplayed = false;
+
 	private void addScoreToHighScore(Ship ship) {
-			//Get user name
-			String input = JOptionPane.showInputDialog(null, "Enter 5 Letter Name:", "Player " + ship.getPlayer() + " scored a highscore!", 1);
-			if(input == null)
-				return;
-			else if(input.isEmpty())
-				input = "P" + ship.getPlayer();
-			
-			highScores.add(new scoreBoardSlot(ship.score, input.substring(0, Math.min(input.length(), 5))));
-			
-			//Sort the array
-			for (int i = 0 ; i < highScores.size() ; i++)
-            {
-                    for (int j = 0 ; j < i ; j++)
-                    {
-                            if (highScores.get(i).score > highScores.get(j).score)
-                            {
-                                    int tempScore = highScores.get(j).score;
-                                    highScores.get(j).score = highScores.get(i).score;
-                                    highScores.get(i).score = tempScore;
-                                    
-                                    String tempName = highScores.get(j).name;
-                                    highScores.get(j).name = highScores.get(i).name;
-                                    highScores.get(i).name = tempName;
-                            }
-                    }        
-            }
-			
-			//remove last element
-			if(highScores.size() > 10)
-				highScores.remove(10);
-			
-			//save the file
-			try
-            {
-                    FileWriter fileWriter = new FileWriter("highscores.txt");
-                    
-                    for (int i = 0 ; i < highScores.size() ; i++)
-                            fileWriter.write(highScores.get(i).name + "|" + highScores.get(i).score + "\n");                   
-                    
-                    fileWriter.close();                         
-            }
-            catch (Exception e) {}
-	}	
-	private void resetHighscores(){
-		//reset all names and scores
+		// Get user name
+		String input = JOptionPane.showInputDialog(null,
+				"Enter 5 Letter Name:", "Player " + ship.getPlayer()
+						+ " scored a highscore!", 1);
+		if (input == null)
+			return;
+		else if (input.isEmpty())
+			input = "P" + ship.getPlayer();
+
+		highScores.add(new scoreBoardSlot(ship.score, input.substring(0,
+				Math.min(input.length(), 5))));
+
+		// Sort the array
+		for (int i = 0; i < highScores.size(); i++) {
+			for (int j = 0; j < i; j++) {
+				if (highScores.get(i).score > highScores.get(j).score) {
+					int tempScore = highScores.get(j).score;
+					highScores.get(j).score = highScores.get(i).score;
+					highScores.get(i).score = tempScore;
+
+					String tempName = highScores.get(j).name;
+					highScores.get(j).name = highScores.get(i).name;
+					highScores.get(i).name = tempName;
+				}
+			}
+		}
+
+		// remove last element
+		if (highScores.size() > 10)
+			highScores.remove(10);
+
+		// save the file
+		try {
+			FileWriter fileWriter = new FileWriter("highscores.txt");
+
+			for (int i = 0; i < highScores.size(); i++)
+				fileWriter.write(highScores.get(i).name + "|"
+						+ highScores.get(i).score + "\n");
+
+			fileWriter.close();
+		} catch (Exception e) {
+		}
+	}
+
+	private void resetHighscores() {
+		// reset all names and scores
 		int count = 1;
-		for(scoreBoardSlot sbs : highScores) {
+		for (scoreBoardSlot sbs : highScores) {
 			sbs.name = "P" + count;
 			sbs.score = 0;
 			count++;
 		}
-		
-		//write the file
-		try
-        {
-                FileWriter fileWriter = new FileWriter("highscores.txt");
-                
-                for (int i = 0 ; i < highScores.size() ; i++)
-                        fileWriter.write(highScores.get(i).name + "|" + highScores.get(i).score + "\n");                   
-                
-                fileWriter.close();                         
-        }
-        catch (Exception e) {}	
-		
-	}
 
+		// write the file
+		try {
+			FileWriter fileWriter = new FileWriter("highscores.txt");
+
+			for (int i = 0; i < highScores.size(); i++)
+				fileWriter.write(highScores.get(i).name + "|"
+						+ highScores.get(i).score + "\n");
+
+			fileWriter.close();
+		} catch (Exception e) {
+		}
+
+	}
 
 	public AsteroidsGame() {
 		super();
@@ -192,25 +188,24 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 		isMultiplayer = false;
 		isGravObjActive = false;
 		isGravObjVisible = false;
-		
-		//load high scores
-		try
-        {
-                File file = new File("highscores.txt"); 
-                FileReader reader = new FileReader(file);
-                BufferedReader bufferReader = new BufferedReader(reader);
-                String str; 
-                
-                while((str = bufferReader.readLine()) != null) {
-                	String[] split = str.split("\\|");
-                	String name = split[0];
-                    String score = split[1];
-                    int scoreInt = Integer.parseInt(score);
-                    highScores.add(new scoreBoardSlot(scoreInt, name));
-                }
-                reader.close();                         
-        }
-        catch (Exception e) {}
+
+		// load high scores
+		try {
+			File file = new File("highscores.txt");
+			FileReader reader = new FileReader(file);
+			BufferedReader bufferReader = new BufferedReader(reader);
+			String str;
+
+			while ((str = bufferReader.readLine()) != null) {
+				String[] split = str.split("\\|");
+				String name = split[0];
+				String score = split[1];
+				int scoreInt = Integer.parseInt(score);
+				highScores.add(new scoreBoardSlot(scoreInt, name));
+			}
+			reader.close();
+		} catch (Exception e) {
+		}
 	}
 
 	public void paint(Graphics gGeneric) {
@@ -223,21 +218,22 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, screenWidth, screenHeight);
-		
-		if((!isMultiplayer && playerOneGameOver) || (isMultiplayer && playerOneGameOver && playerTwoGameOver)) {
+
+		if ((!isMultiplayer && playerOneGameOver)
+				|| (isMultiplayer && playerOneGameOver && playerTwoGameOver)) {
 			highScoreDisplayed = true;
 			g.setColor(Color.WHITE);
 			Font font = new Font("Veranda", Font.PLAIN, 25);
 			g.setFont(font);
 			int count = 1;
-			g.drawString("High Scores", screenWidth/2 - 30, 25);
-			
-			for(scoreBoardSlot sbs : highScores) {
-				g.drawString(count + ": " + sbs.name + " - " + sbs.score, screenWidth/2 - 20, 100 + (count * 25));
+			g.drawString("High Scores", screenWidth / 2 - 30, 25);
+
+			for (scoreBoardSlot sbs : highScores) {
+				g.drawString(count + ": " + sbs.name + " - " + sbs.score,
+						screenWidth / 2 - 20, 100 + (count * 25));
 				count++;
 			}
-		}
-		else
+		} else
 			drawGame(g);
 
 		gGeneric.drawImage(image, 0, 0, this);
@@ -260,7 +256,7 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 			g.setColor(Color.DARK_GRAY);
 		else
 			g.setColor(Color.WHITE);
-		
+
 		Font font = new Font("Veranda", Font.PLAIN, 25);
 		g.setFont(font);
 		g.drawString("Level : " + level, screenWidth / 2, screenHeight - 50);
@@ -273,11 +269,11 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 				playerOneShip.color = Color.DARK_GRAY;
 
 			g.setColor(playerOneShip.color);
-			
-			if(!isFreePlay)
+
+			if (!isFreePlay)
 				livesString = String.valueOf(playerOneShip.lives);
-			g.drawString("Player 1: " + "Lives : " + livesString
-					+ " Score : " + playerOneShip.score, 0, screenHeight - 50);
+			g.drawString("Player 1: " + "Lives : " + livesString + " Score : "
+					+ playerOneShip.score, 0, screenHeight - 50);
 
 			if (!playerOneGameOver)
 				playerOneShip.draw(g);
@@ -290,10 +286,10 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 				playerTwoShip.color = Color.DARK_GRAY;
 
 			g.setColor(playerTwoShip.color);
-			if(!isFreePlay)
+			if (!isFreePlay)
 				livesString = String.valueOf(playerTwoShip.lives);
-			g.drawString("Player 2: " + "Lives : " + livesString
-					+ " Score : " + playerTwoShip.score, 0, screenHeight - 75);
+			g.drawString("Player 2: " + "Lives : " + livesString + " Score : "
+					+ playerTwoShip.score, 0, screenHeight - 75);
 
 			if (!playerTwoGameOver)
 				playerTwoShip.draw(g);
@@ -305,7 +301,7 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 		if (alien != null && !alienDestroyed)
 			alien.draw(g);
 	}
-	
+
 	public void run() {
 		for (;;) {
 
@@ -327,21 +323,22 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 					dialog = new JDialog();
 					dialog.setTitle("Options");
 					dialog.setSize(215, 315);
-					dialog.setLocation(screenWidth / 2 - 150, screenHeight / 2 - 150);
-					
+					dialog.setLocation(screenWidth / 2 - 150,
+							screenHeight / 2 - 150);
+
 					WindowAdapter exitListener = new WindowAdapter() {
 						@Override
-			            public void windowClosing(WindowEvent e) {
+						public void windowClosing(WindowEvent e) {
 							displayPauseMenu = !displayPauseMenu;
 							openDialog = !openDialog;
-			            }
-			        };
-			        
-			        dialog.addWindowListener(exitListener);
-					
+						}
+					};
+
+					dialog.addWindowListener(exitListener);
+
 					Container pane = dialog.getContentPane();
 					pane.setLayout(null);
-					
+
 					int count = 0;
 					for (String s : buttonNames) {
 						JButton b = new JButton(s);
@@ -360,8 +357,8 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 			repaint();
 			savePosition[0] = playerOneShip.getPosition()[0];
 			savePosition[1] = playerOneShip.getPosition()[1];
-			//printLocation(playerOneShip.getPosition()[0],playerOneShip.getPosition()[1]);
-			
+			// printLocation(playerOneShip.getPosition()[0],playerOneShip.getPosition()[1]);
+
 			try {
 				Thread.sleep(30);
 			} catch (InterruptedException e) {
@@ -411,10 +408,11 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 				asteroidCollision(asteroid, asteroidsToAdd, asteroidsToDelete);
 				playerOneGameOver = playerOneShip.died(screenWidth / 2,
 						screenHeight / 2);
-				
-				if(playerOneGameOver && playerOneShip.score > highScores.get(9).score)
+
+				if (playerOneGameOver
+						&& playerOneShip.score > highScores.get(9).score)
 					addScoreToHighScore(playerOneShip);
-				
+
 				hit = false;
 			}
 
@@ -426,8 +424,9 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 							asteroidsToDelete);
 					playerTwoGameOver = playerTwoShip.died(screenWidth / 2,
 							screenHeight / 2);
-					
-					if(playerTwoGameOver && playerTwoShip.score > highScores.get(9).score)
+
+					if (playerTwoGameOver
+							&& playerTwoShip.score > highScores.get(9).score)
 						addScoreToHighScore(playerTwoShip);
 				}
 			}
@@ -474,10 +473,11 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 
 				playerOneGameOver = playerOneShip.died(screenWidth / 2,
 						screenHeight / 2);
-				
-				if(playerOneGameOver && playerOneShip.score > highScores.get(9).score)
+
+				if (playerOneGameOver
+						&& playerOneShip.score > highScores.get(9).score)
 					addScoreToHighScore(playerOneShip);
-				
+
 				rogueDestroyed = true;
 				hit = false;
 			}
@@ -488,10 +488,11 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 				if (hit) {
 					playerTwoGameOver = playerTwoShip.died(screenWidth / 2,
 							screenHeight / 2);
-					
-					if(playerTwoGameOver && playerTwoShip.score > highScores.get(9).score)
+
+					if (playerTwoGameOver
+							&& playerTwoShip.score > highScores.get(9).score)
 						addScoreToHighScore(playerTwoShip);
-					
+
 					rogueDestroyed = true;
 					hit = false;
 				}
@@ -530,10 +531,11 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 
 				playerOneGameOver = playerOneShip.died(screenWidth / 2,
 						screenHeight / 2);
-				
-				if(playerOneGameOver && playerOneShip.score > highScores.get(9).score)
+
+				if (playerOneGameOver
+						&& playerOneShip.score > highScores.get(9).score)
 					addScoreToHighScore(playerOneShip);
-				
+
 				alien.livesLeft--;
 				if (alien.livesLeft <= 0)
 					alienDestroyed = true;
@@ -548,9 +550,10 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 					playerTwoGameOver = playerTwoShip.died(screenWidth / 2,
 							screenHeight / 2);
 
-					if(playerTwoGameOver && playerTwoShip.score > highScores.get(9).score)
+					if (playerTwoGameOver
+							&& playerTwoShip.score > highScores.get(9).score)
 						addScoreToHighScore(playerTwoShip);
-					
+
 					alien.livesLeft--;
 					if (alien.livesLeft <= 0)
 						alienDestroyed = true;
@@ -566,8 +569,9 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 				bulletToDelete.add(b);
 				playerOneGameOver = playerOneShip.died(screenWidth / 2,
 						screenHeight / 2);
-				
-				if(playerOneGameOver && playerOneShip.score > highScores.get(9).score)
+
+				if (playerOneGameOver
+						&& playerOneShip.score > highScores.get(9).score)
 					addScoreToHighScore(playerOneShip);
 				continue;
 			}
@@ -578,8 +582,9 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 					bulletToDelete.add(b);
 					playerTwoGameOver = playerTwoShip.died(screenWidth / 2,
 							screenHeight / 2);
-					
-					if(playerTwoGameOver && playerTwoShip.score > highScores.get(9).score)
+
+					if (playerTwoGameOver
+							&& playerTwoShip.score > highScores.get(9).score)
 						addScoreToHighScore(playerTwoShip);
 				}
 			}
@@ -604,13 +609,13 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 	private void goToNextLevel() {
 		paused = true;
 		level++;
-		
+
 		boolean manuallyChanged = false;
-		
-		if(!asteroids.isEmpty())
+
+		if (!asteroids.isEmpty())
 			manuallyChanged = true;
-		
-		asteroids.clear(); //Just in case manually changed level
+
+		asteroids.clear(); // Just in case manually changed level
 		bullets.clear();
 
 		if (isGravObjActive)
@@ -619,15 +624,13 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 		if (level % 2 == 0) {
 			rogueDestroyed = false;
 			rogue = new RogueShip(screenWidth, screenHeight, level);
-		}
-		else 
+		} else
 			rogue = null;
 
 		if (level % 3 == 0) {
 			alienDestroyed = false;
 			alien = new AlienShip(screenWidth, screenHeight, level);
-		}
-		else
+		} else
 			alien = null;
 		// Create asteroids (level 1 has 3, 2 has 4, etc)
 		for (int i = 0; i < Math.min(level + 2, 20); i++)
@@ -848,18 +851,19 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 
 		case (KeyEvent.VK_ENTER): // Start game after pause
 			if (press) {
-				if(highScoreDisplayed) {
+				if (highScoreDisplayed) {
 					highScoreDisplayed = false;
-					
+
 					if (isMultiplayer) {
 						playerOneShip = createOrUpdateShip(playerOneShip,
 								3 * screenWidth / 4, screenHeight / 2, 0, false);
-						playerTwoShip = createOrUpdateShip(playerTwoShip, screenWidth / 4,
-								screenHeight / 2, Math.PI, true);
+						playerTwoShip = createOrUpdateShip(playerTwoShip,
+								screenWidth / 4, screenHeight / 2, Math.PI,
+								true);
 					} else
-						playerOneShip = createOrUpdateShip(playerOneShip, screenWidth / 2,
-								screenHeight / 2, 0, false);
-					
+						playerOneShip = createOrUpdateShip(playerOneShip,
+								screenWidth / 2, screenHeight / 2, 0, false);
+
 					playerOneShip.isDead = false;
 					playerOneShip.score = 0;
 					playerOneGameOver = false;
@@ -867,8 +871,8 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 					playerOneShip.velocity[1] = 0;
 					playerOneShip.stopTurning();
 					playerOneShip.stopAcceleration();
-					
-					if(isMultiplayer) {
+
+					if (isMultiplayer) {
 						playerTwoShip.isDead = false;
 						playerTwoGameOver = false;
 						playerTwoShip.score = 0;
@@ -877,14 +881,13 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 						playerTwoShip.stopTurning();
 						playerTwoShip.stopAcceleration();
 					}
-				
+
 					level = 0;
 					goToNextLevel();
-				}
-				else
+				} else
 					paused = !paused;
 			}
-				
+
 			break;
 		case (KeyEvent.VK_ESCAPE): // Bring up pause menu
 			displayPauseMenu = true;
@@ -931,64 +934,67 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 		String buttonPressed = button.getText();
 
 		if (buttonPressed == buttonNames[0]) { // Continue
-			
+
 			displayPauseMenu = !displayPauseMenu;
 			openDialog = !openDialog;
-			
+
 			// close dialog
 			dialog.setVisible(false);
 			dialog.dispose();
-			
-		} else if (buttonPressed == buttonNames[1]) { // Toggle Gravitational Object
-			
-			if((gravObj != null) && isGravObjActive) {
+
+		} else if (buttonPressed == buttonNames[1]) { // Toggle Gravitational
+														// Object
+
+			if ((gravObj != null) && isGravObjActive) {
 				gravObj = null;
 				isGravObjActive = !isGravObjActive;
 			} else if ((gravObj == null && !isGravObjActive)) {
 				gravObj = new GravitationalObject(screenWidth, screenHeight);
 				isGravObjActive = !isGravObjActive;
 			}
-			
-		} else if (buttonPressed == buttonNames[2]) { // Gravitational Object Visible
-			
-			if((gravObj != null) && isGravObjActive && isGravObjVisible) {
-				
+
+		} else if (buttonPressed == buttonNames[2]) { // Gravitational Object
+														// Visible
+
+			if ((gravObj != null) && isGravObjActive && isGravObjVisible) {
+
 				isGravObjVisible = !isGravObjVisible;
-			}
-			else if((gravObj != null) && isGravObjActive && !isGravObjVisible) {
+			} else if ((gravObj != null) && isGravObjActive
+					&& !isGravObjVisible) {
 				isGravObjVisible = !isGravObjVisible;
 			}
 		} else if (buttonPressed == buttonNames[3]) { // Free Play
 			isFreePlay = !isFreePlay;
 			playerOneShip.isFreePlay = isFreePlay;
-			if(isMultiplayer)
+			if (isMultiplayer)
 				playerTwoShip.isFreePlay = isFreePlay;
-			
+
 		} else if (buttonPressed == buttonNames[4]) { // Number of Asteroids
-			while(true) {
-				String s = (String)JOptionPane.showInputDialog(frame, "How many asteroids would you like?", "Asteroid Count Selector", 
-						JOptionPane.PLAIN_MESSAGE, null, null, asteroids.size());
-				
-				//Hit cancel
-				if(s == null)
+			while (true) {
+				String s = (String) JOptionPane.showInputDialog(frame,
+						"How many asteroids would you like?",
+						"Asteroid Count Selector", JOptionPane.PLAIN_MESSAGE,
+						null, null, asteroids.size());
+
+				// Hit cancel
+				if (s == null)
 					break;
-				if(stringIsNumeric(s)) {
+				if (stringIsNumeric(s)) {
 					int d = Integer.parseInt(s);
-					if(d == 0)
+					if (d == 0)
 						asteroids.clear();
-					if(d < asteroids.size()) {
-						for(int i = 0; i < asteroids.size(); i++) {
-							if(i >= d)
+					if (d < asteroids.size()) {
+						for (int i = 0; i < asteroids.size(); i++) {
+							if (i >= d)
 								asteroids.remove(i);
 						}
-					}
-					else {
-						for(int i = asteroids.size(); i < d; i++) {
-							asteroids.add(new Asteroid(screenWidth, screenHeight, level,
-									AsteroidLevel.BIG));
+					} else {
+						for (int i = asteroids.size(); i < d; i++) {
+							asteroids.add(new Asteroid(screenWidth,
+									screenHeight, level, AsteroidLevel.BIG));
 						}
 					}
-						
+
 					break;
 				}
 			}
@@ -999,48 +1005,56 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 		} else if (buttonPressed == buttonNames[7]) { // Load Game
 			loadGame();
 		} else if (buttonPressed == buttonNames[8]) { // Starting Level
-			while(true) {
-				String s = (String)JOptionPane.showInputDialog(frame, "What level should we go to?", "Level Selector", 
+			while (true) {
+				String s = (String) JOptionPane.showInputDialog(frame,
+						"What level should we go to?", "Level Selector",
 						JOptionPane.PLAIN_MESSAGE, null, null, level);
-				
-				//Hit cancel
-				if(s == null)
+
+				// Hit cancel
+				if (s == null)
 					break;
-				if(stringIsNumeric(s)) {
-					int d = Integer.parseInt(s) - 1; //increments when we go to next level
+				if (stringIsNumeric(s)) {
+					int d = Integer.parseInt(s) - 1; // increments when we go to
+														// next level
 					d = Math.max(d, 0);
 					level = d;
 					goToNextLevel();
-						
+
 					break;
 				}
 			}
 		} else if (buttonPressed == buttonNames[9]) { // Multiplayer
 			isMultiplayer = !isMultiplayer;
-			if(isMultiplayer && playerTwoShip == null)
-				playerTwoShip = createOrUpdateShip(playerTwoShip, screenWidth/2, screenHeight/2, Math.PI, true);
-			if(!isMultiplayer)
+			if (isMultiplayer && playerTwoShip == null)
+				playerTwoShip = createOrUpdateShip(playerTwoShip,
+						screenWidth / 2, screenHeight / 2, Math.PI, true);
+			if (!isMultiplayer)
 				playerTwoShip = null;
 		} else if (buttonPressed == buttonNames[10]) { // Quit
-			int n = JOptionPane.showOptionDialog(new JDialog(), "Are you sure you want to quit?", "Quit", JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE, null, quitOptions, quitOptions[1]);
+			int n = JOptionPane.showOptionDialog(new JDialog(),
+					"Are you sure you want to quit?", "Quit",
+					JOptionPane.YES_NO_CANCEL_OPTION,
+					JOptionPane.QUESTION_MESSAGE, null, quitOptions,
+					quitOptions[1]);
 			if (n == JOptionPane.YES_OPTION) {
-				
-				//TODO: Need to add high score
-				if(playerOneShip.score > highScores.get(9).score)
+
+				// TODO: Need to add high score
+				if (playerOneShip.score > highScores.get(9).score)
 					addScoreToHighScore(playerOneShip);
-				if(isMultiplayer && playerTwoShip.score > highScores.get(9).score)
+				if (isMultiplayer
+						&& playerTwoShip.score > highScores.get(9).score)
 					addScoreToHighScore(playerTwoShip);
-				
+
 				// close dialog
 				dialog.setVisible(false);
 				dialog.dispose();
-				
-				//close game
+
+				// close game
 				frame.setVisible(false);
 				frame.dispose();
 				System.exit(0);
-				
-			}else{
+
+			} else {
 			}
 		}
 	}
@@ -1048,65 +1062,96 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 	private boolean stringIsNumeric(String s) {
 		try {
 			Integer.parseInt(s);
-		}
-		catch(NumberFormatException e){
+		} catch (NumberFormatException e) {
 			return false;
 		}
 		return true;
 	}
-	
+
 	private void saveGame() {
 
-		try{  // Catch errors in I/O if necessary.
-		// Open a file to write to, named SavedObj.sav.
-		FileOutputStream saveFile=new FileOutputStream("SaveObj.sav");
+		try {
+			if (playerOneShip instanceof Ship) {
+				try {
+					FileWriter fileWriter = new FileWriter("savedata.txt");
 
-		// Create an ObjectOutputStream to put objects into save file.
-		ObjectOutputStream save = new ObjectOutputStream(saveFile);
+					fileWriter.write(playerOneShip.lives + "|"			//lives
+							+ playerOneShip.getPosition()[0] + "|" 		//x
+							+ playerOneShip.getPosition()[1] + "|"		//y
+							+ playerOneShip.getAngle() + "|"			//angle
+							+ playerOneShip.score + "|"					//score
+							+ playerOneShip.getPlayer() + "|"			//player number
+							+ "\n");			
 
-		// Now we do the save.
-		save.writeObject(playerOneShip);
-
-		// Close the file.
-		save.close(); // This also closes saveFile.
-		}
-		catch(Exception exc){
-		exc.printStackTrace(); // If there was an error, print the info.
+					fileWriter.close();
+				} catch (Exception e) {
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
 	}
+
 	private void loadGame() {
-
-		// Wrap all in a try/catch block to trap I/O errors.
+		Boolean playerBool = true;
+		Ship loadShip = null;
+		Integer livesInt, xInt = null, yInt = null, scoreInt = null, playerInt = null;
+		Double angDouble = null;
+		
 		try{
-		// Open file to read from, named SavedObj.sav.
-		FileInputStream loadFile = new FileInputStream("SaveObj.sav");
+			File file = new File("savedata.txt");
+			FileReader reader = new FileReader(file);
+			BufferedReader bufferReader = new BufferedReader(reader);
+			String str;
+			
+			while ((str = bufferReader.readLine()) != null) {
+				String[] split = str.split("\\|");
+				String lives = split[0];
+				String x = split[1];
+				String y = split[2];
+				String angle = split[3];
+				String score = split[4];
+				String player = split[5];
+				
+				livesInt = Integer.parseInt(lives);
+				xInt = Integer.parseInt(x);
+				yInt = Integer.parseInt(y);
+				angDouble = Double.parseDouble(angle);
+				scoreInt = Integer.parseInt(score);
+				playerInt = Integer.parseInt(player);
+				
+				if(playerInt == 2) {
+					playerBool = true;
+				}else if (playerInt == 1) {
+					playerBool = false;
+				}
 
-		// Create an ObjectInputStream to get objects from save file.
-		ObjectInputStream load = new ObjectInputStream(loadFile);
-
-		// Now we do the restore.
-		// readObject() returns a generic Object, we cast those back
-		// into their original class type.
-		// For primitive types, use the corresponding reference class.
-		playerOneShip = (Ship) load.readObject();
-		
-		// Close the file.
-		load.close(); // This also closes saveFile.
-		
-//		System.out.println(thread);
-//		System.out.println("\tloadedship position: " + loadedShip.angle + ", " + loadedShip.getPosition()[1]);
-		}
-		catch(Exception exc){
-		exc.printStackTrace(); // If there was an error, print the info.
+			}
+			loadShip = new Ship(xInt, yInt, angDouble, playerBool);
+			playerOneShip = loadShip;
+			
+			reader.close();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		
-//		System.out.println("\nRestored Object Values:\n");
+//		try {
+//			File file = new File("highscores.txt");
+//			FileReader reader = new FileReader(file);
+//			BufferedReader bufferReader = new BufferedReader(reader);
+//			String str;
 //
-//		System.out.println("\tloadedship angle: " );
-//		System.out.println(savePosition[0] + ", " + savePosition[1]);
+//			while ((str = bufferReader.readLine()) != null) {
+//				String[] split = str.split("\\|");
+//				String name = split[0];
+//				String score = split[1];
+//				scoreInt = Integer.parseInt(score);
+//				highScores.add(new scoreBoardSlot(scoreInt, name));
+//			}
+//			reader.close();
+//		} catch (Exception e) {
+//		}
 	}
-	private void printLocation(double x, double y) {
-		System.out.println("test" + x +", "+ y);
-	}
+
 }
