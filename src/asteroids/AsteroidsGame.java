@@ -241,6 +241,11 @@ public class AsteroidsGame extends Applet implements Runnable, KeyListener,
 			drawGame(g);
 
 		gGeneric.drawImage(image, 0, 0, this);
+		
+		try {
+            Thread.sleep(20);
+	    }
+	    catch (InterruptedException ex) { }
 	}
 
 	private void drawGame(Graphics2D g) {
